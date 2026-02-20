@@ -8,7 +8,8 @@ import pandas as pd
 
 # Setup Django environment
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'backend'))
+backend_path = os.path.join(os.path.dirname(__file__), '..')
+sys.path.insert(0, backend_path)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cafelocate.settings')
 django.setup()
 

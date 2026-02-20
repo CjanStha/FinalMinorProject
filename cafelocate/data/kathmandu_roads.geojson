@@ -1,0 +1,134 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_id": 1001,
+        "highway": "primary",
+        "name": "Ring Road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            85.3,
+            27.7
+          ],
+          [
+            85.31,
+            27.7
+          ],
+          [
+            85.32,
+            27.7
+          ],
+          [
+            85.33,
+            27.7
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_id": 1002,
+        "highway": "secondary",
+        "name": "New Road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            85.315,
+            27.71
+          ],
+          [
+            85.315,
+            27.72
+          ],
+          [
+            85.315,
+            27.73
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_id": 1003,
+        "highway": "tertiary",
+        "name": "Durbar Marg"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            85.305,
+            27.705
+          ],
+          [
+            85.31,
+            27.71
+          ],
+          [
+            85.315,
+            27.715
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_id": 1004,
+        "highway": "residential",
+        "name": "Thamel Road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            85.31,
+            27.715
+          ],
+          [
+            85.312,
+            27.717
+          ],
+          [
+            85.314,
+            27.719
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_id": 1005,
+        "highway": "residential",
+        "name": "Jhamel Road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            85.32,
+            27.72
+          ],
+          [
+            85.322,
+            27.722
+          ],
+          [
+            85.324,
+            27.724
+          ]
+        ]
+      }
+    }
+  ]
+}

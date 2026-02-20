@@ -184,6 +184,7 @@ class SuitabilityAnalysisView(APIView):
         lat       = serializer.validated_data['lat']
         lng       = serializer.validated_data['lng']
         cafe_type = serializer.validated_data['cafe_type']
+        radius    = serializer.validated_data.get('radius', 500)  # Default 500m
 
         # Step 2: Get all cafes within 500m using haversine distance
         nearby_cafes = []
@@ -194,7 +195,7 @@ class SuitabilityAnalysisView(APIView):
 
                 if cafe_lng is not None and cafe_lat is not None:
                     distance = haversine_distance(lat, lng, cafe_lat, cafe_lng)
-                    if distance <= 500:
+                    if distance <= radius:
                         cafe.distance = distance
                         nearby_cafes.append(cafe)
 
@@ -224,12 +225,12 @@ class SuitabilityAnalysisView(APIView):
                 coordinates = road.geometry.get('coordinates', [])
 
                 if geom_type == 'LineString' and coordinates:
-                    # Check if any point on the line is within 500m
+                    # Check if any point on the line is within radius
                     for coord in coordinates:
                         if len(coord) >= 2:
                             road_lng, road_lat = coord[0], coord[1]
                             distance = haversine_distance(lat, lng, road_lat, road_lng)
-                            if distance <= 500:
+                            if distance <= radius:
                                 road_segments_nearby += 1
                                 break
                 elif geom_type == 'MultiLineString' and coordinates:
@@ -239,7 +240,7 @@ class SuitabilityAnalysisView(APIView):
                             if len(coord) >= 2:
                                 road_lng, road_lat = coord[0], coord[1]
                                 distance = haversine_distance(lat, lng, road_lat, road_lng)
-                                if distance <= 500:
+                                if distance <= radius:
                                     road_segments_nearby += 1
                                     break
                         else:

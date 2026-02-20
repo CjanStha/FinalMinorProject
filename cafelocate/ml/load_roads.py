@@ -1,11 +1,14 @@
 """
-Load road network data into Django/PostGIS database
+Load road network data into Django/SQLite database
 """
 
 import os
+import sys
 import django
 import json
-from django.contrib.gis.geos import LineString, MultiLineString
+
+# Add the backend directory to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 # Setup Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cafelocate.settings')
@@ -44,21 +47,17 @@ def load_road_network():
 
             osm_id = properties['osm_id']
             road_type = properties['highway']
+            name = properties.get('name', '')
 
-            # Convert GeoJSON LineString to Django GEOS geometry
-            if geometry['type'] == 'LineString':
-                coords = geometry['coordinates']
-                # GeoJSON is [lng, lat], Django expects [lng, lat] for LineString
-                django_geom = LineString(coords)
-            else:
-                print(f"Skipping road {osm_id}: unsupported geometry type {geometry['type']}")
-                continue
+            # Store geometry as JSON for SQLite compatibility
+            # (instead of using GeoDjango's spatial fields)
+            geometry_json = json.dumps(geometry)
 
             # Create Road object
             road = Road(
                 osm_id=osm_id,
                 road_type=road_type,
-                geometry=django_geom
+                geometry=geometry_json  # Store as JSON string
             )
             road.save()
             loaded_count += 1

@@ -9,6 +9,7 @@ class MapManager {
         this.cafeMarkers = [];
         this.selectedLocation = null;
         this.selectedCafeType = null;
+        this.analysisRadius = 500; // Default 500 meters
         this.init();
     }
 
@@ -57,6 +58,24 @@ class MapManager {
                 }
             });
         }
+
+        // Radius slider
+        const radiusSlider = document.getElementById('radius-slider');
+        const radiusValue = document.getElementById('radius-value');
+        if (radiusSlider && radiusValue) {
+            radiusSlider.addEventListener('input', (e) => {
+                this.analysisRadius = parseInt(e.target.value);
+                radiusValue.textContent = this.analysisRadius;
+                // Update circle radius if marker exists
+                if (this.circle && this.selectedLocation) {
+                    this.circle.setRadius(this.analysisRadius);
+                    // Re-analyze with new radius
+                    if (this.selectedCafeType) {
+                        this.analyzeLocation();
+                    }
+                }
+            });
+        }
     }
 
     handleMapClick(latlng) {
@@ -69,12 +88,12 @@ class MapManager {
         this.marker = L.marker([lat, lng]).addTo(this.map);
         this.marker.bindPopup(`<b>Location Selected</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
 
-        // Add 500m radius circle
+        // Add 500m radius circle (using adjustable radius)
         this.circle = L.circle([lat, lng], {
             color: '#e74c3c',
             fillColor: '#e74c3c',
             fillOpacity: 0.1,
-            radius: 500
+            radius: this.analysisRadius
         }).addTo(this.map);
 
         // Store selected location
@@ -101,11 +120,11 @@ class MapManager {
 
         try {
             // Get nearby cafes
-            const nearbyData = await window.apiManager.getNearbyCafes(lat, lng, 1000);
+            const nearbyData = await window.apiManager.getNearbyCafes(lat, lng, this.analysisRadius);
             this.displayNearbyCafes(nearbyData.cafes);
 
             // Get full analysis
-            const analysisData = await window.apiManager.getSuitabilityAnalysis(lat, lng, this.selectedCafeType);
+            const analysisData = await window.apiManager.getSuitabilityAnalysis(lat, lng, this.selectedCafeType, this.analysisRadius);
             this.displayAnalysisResults(analysisData);
 
         } catch (error) {

@@ -46,13 +46,14 @@ class APIManager {
     }
 
     // Get full suitability analysis
-    async getSuitabilityAnalysis(lat, lng, cafeType) {
+    async getSuitabilityAnalysis(lat, lng, cafeType, radius = 500) {
         return this.makeRequest('/analyze/', {
             method: 'POST',
             body: JSON.stringify({
                 lat: lat,
                 lng: lng,
-                cafe_type: cafeType
+                cafe_type: cafeType,
+                radius: radius
             })
         });
     }

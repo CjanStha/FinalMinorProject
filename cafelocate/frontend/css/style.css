@@ -199,6 +199,57 @@ body {
     font-size: 1rem;
 }
 
+.radius-control {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#radius-slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border-color);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+#radius-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+#radius-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.radius-display {
+    text-align: center;
+    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.help-text {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
 .instructions {
     padding-left: 20px;
 }

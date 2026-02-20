@@ -47,7 +47,7 @@ class CafeSerializer(serializers.ModelSerializer):
 # Validates the incoming POST data when user pins a location
 # ═══════════════════════════════════════════════════════════════════
 class SuitabilityRequestSerializer(serializers.Serializer):
-    # Frontend sends: { "lat": 27.7172, "lng": 85.3240, "cafe_type": "bakery" }
+    # Frontend sends: { "lat": 27.7172, "lng": 85.3240, "cafe_type": "bakery", "radius": 500 }
 
     lat       = serializers.FloatField(
         min_value=27.6, max_value=27.8,  # Kathmandu latitude range
@@ -58,6 +58,10 @@ class SuitabilityRequestSerializer(serializers.Serializer):
     )
     cafe_type = serializers.ChoiceField(
         choices=['coffee_shop', 'bakery', 'dessert_shop', 'restaurant']
+    )
+    radius    = serializers.IntegerField(
+        min_value=100, max_value=2000, default=500,  # 100m to 2km radius
+        required=False
     )
 
 
