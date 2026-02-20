@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CafeLocate - Kathmandu Café Location Analysis</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <h2>☕ CafeLocate</h2>
+        </div>
+        <div class="user-info">
+            <span>Demo Mode</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Left Sidebar -->
+        <div class="sidebar left-sidebar">
+            <div class="sidebar-section">
+                <h3>🏪 Choose Café Type</h3>
+                <select id="cafe-type-select" class="form-control">
+                    <option value="">Select café type...</option>
+                    <option value="coffee_shop">Coffee Shop</option>
+                    <option value="bakery">Bakery Café</option>
+                    <option value="dessert_shop">Dessert Shop</option>
+                    <option value="restaurant">Restaurant Café</option>
+                </select>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>📍 Instructions</h3>
+                <ol class="instructions">
+                    <li>Select your café type above</li>
+                    <li>Click anywhere on the map</li>
+                    <li>View the 500m analysis radius</li>
+                    <li>Get AI-powered recommendations</li>
+                </ol>
+            </div>
+
+            <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Analyzing location...</p>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map" class="map-container"></div>
+
+        <!-- Right Sidebar -->
+        <div id="results-sidebar" class="sidebar right-sidebar">
+            <div id="results-content">
+                <div class="results-header">
+                    <h3>📊 Location Analysis</h3>
+                    <div id="location-coords" class="coords"></div>
+                </div>
+
+                <!-- Suitability Score -->
+                <div class="result-section">
+                    <h4>🎯 Suitability Score</h4>
+                    <div class="score-display">
+                        <div class="score-circle">
+                            <span id="suitability-score">-</span>
+                        </div>
+                        <div class="score-label">out of 100</div>
+                    </div>
+                </div>
+
+                <!-- ML Prediction -->
+                <div class="result-section">
+                    <h4>🤖 AI Recommendation</h4>
+                    <div id="prediction-card" class="prediction-card">
+                        <div class="prediction-type">-</div>
+                        <div class="prediction-confidence">-</div>
+                    </div>
+                </div>
+
+                <!-- Top 5 Cafes -->
+                <div class="result-section">
+                    <h4>⭐ Top 5 Nearby Cafés</h4>
+                    <div id="top5-list" class="cafe-list">
+                        <p class="no-data">Click on the map to see results</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Metrics -->
+                <div class="result-section">
+                    <h4>📈 Detailed Analysis</h4>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <div class="metric-label">Competitors</div>
+                            <div class="metric-value" id="competitor-count">-</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Road Access</div>
+                            <div class="metric-value" id="road-length">-</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Population</div>
+                            <div class="metric-value" id="population-density">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/map.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">d:\vscode\MP2\cafelocate\frontend\map.html

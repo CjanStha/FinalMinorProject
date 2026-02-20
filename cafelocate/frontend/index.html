@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CafeLocate - Find Your Perfect Café Location</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="page active">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>☕ CafeLocate</h1>
+                <p>Find the perfect location for your café in Kathmandu</p>
+            </div>
+            <div class="login-content">
+                <div class="features">
+                    <div class="feature">
+                        <div class="feature-icon">🗺️</div>
+                        <h3>Interactive Map</h3>
+                        <p>Pin any location in Kathmandu and get instant analysis</p>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">🤖</div>
+                        <h3>ML Predictions</h3>
+                        <p>AI-powered recommendations for café types that will succeed</p>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">📊</div>
+                        <h3>Data-Driven</h3>
+                        <p>Based on competitor analysis, demographics, and road access</p>
+                    </div>
+                </div>
+                <div id="google-signin-button" class="google-signin"></div>
+                <div class="demo-notice">
+                    <p>🔧 <strong>Demo Mode:</strong> Click "Continue as Guest" to explore the features</p>
+                    <button id="guest-login" class="btn btn-primary">Continue as Guest</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Map Page -->
+    <div id="map-page" class="page">
+        <div class="header">
+            <div class="logo">
+                <h2>☕ CafeLocate</h2>
+            </div>
+            <div class="user-info">
+                <span id="user-name">Guest User</span>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <div class="sidebar left-sidebar">
+                <div class="sidebar-section">
+                    <h3>🏪 Choose Café Type</h3>
+                    <select id="cafe-type-select" class="form-control">
+                        <option value="">Select café type...</option>
+                        <option value="coffee_shop">Coffee Shop</option>
+                        <option value="bakery">Bakery Café</option>
+                        <option value="dessert_shop">Dessert Shop</option>
+                        <option value="restaurant">Restaurant Café</option>
+                    </select>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>📍 How to Use</h3>
+                    <ol class="instructions">
+                        <li>Select your café type above</li>
+                        <li>Click on the map to pin a location</li>
+                        <li>View the 500m analysis radius</li>
+                        <li>Get AI recommendations instantly</li>
+                    </ol>
+                </div>
+
+                <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Analyzing location...</p>
+                </div>
+            </div>
+
+            <!-- Map Container -->
+            <div id="map" class="map-container"></div>
+
+            <!-- Right Sidebar -->
+            <div id="results-sidebar" class="sidebar right-sidebar">
+                <div id="results-content">
+                    <div class="results-header">
+                        <h3>📊 Location Analysis</h3>
+                        <div id="location-coords" class="coords"></div>
+                    </div>
+
+                    <!-- Suitability Score -->
+                    <div class="result-section">
+                        <h4>🎯 Suitability Score</h4>
+                        <div class="score-display">
+                            <div class="score-circle">
+                                <span id="suitability-score">-</span>
+                            </div>
+                            <div class="score-label">out of 100</div>
+                        </div>
+                    </div>
+
+                    <!-- ML Prediction -->
+                    <div class="result-section">
+                        <h4>🤖 AI Recommendation</h4>
+                        <div id="prediction-card" class="prediction-card">
+                            <div class="prediction-type">-</div>
+                            <div class="prediction-confidence">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Top 5 Cafes -->
+                    <div class="result-section">
+                        <h4>⭐ Top 5 Nearby Cafés</h4>
+                        <div id="top5-list" class="cafe-list">
+                            <p class="no-data">Click on the map to see results</p>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Metrics -->
+                    <div class="result-section">
+                        <h4>📈 Detailed Analysis</h4>
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <div class="metric-label">Competitors</div>
+                                <div class="metric-value" id="competitor-count">-</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Road Access</div>
+                                <div class="metric-value" id="road-length">-</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Population</div>
+                                <div class="metric-value" id="population-density">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/map.js"></script>
+</body>
+</html></content>
+<parameter name="filePath">d:\vscode\MP2\cafelocate\frontend\index.html
