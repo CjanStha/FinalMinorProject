@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeLocate — Django Project Setup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Sora:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --bg:       #080b0f;
+  --panel:    #0d1117;
+  --surface:  #131920;
+  --surface2: #1a2230;
+  --border:   #1e2d40;
+  --border2:  #263548;
+  --text:     #e2eaf4;
+  --muted:    #4d6680;
+  --dim:      #2a3d54;
+
+  --django:   #44b78b;  /* Django green */
+  --cmd:      #5baaff;  /* terminal blue */
+  --file:     #ffb347;  /* file orange */
+  --concept:  #c07aff;  /* concept purple */
+  --warn:     #ff6b6b;  /* warning red */
+  --tip:      #44d9a0;  /* tip green */
+  --note:     #5baaff;  /* note blue */
+
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Sora', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── PROGRESS ── */
+#progress {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--border);
+  z-index: 1000;
+}
+#progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--django), var(--cmd));
+  width: 0%; transition: width 0.1s;
+}
+
+/* ── LAYOUT ── */
+.wrap { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 260px; flex-shrink: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  position: fixed; top: 0; left: 0; bottom: 0;
+  overflow-y: auto; z-index: 100;
+  display: flex; flex-direction: column;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sb-brand {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  position: sticky; top: 0; z-index: 1;
+}
+.sb-logo {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  color: var(--django); letter-spacing: -0.3px; margin-bottom: 3px;
+}
+.sb-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+
+.sb-section { padding: 10px 0 4px 18px; font-size: 9px; font-family: var(--mono); color: var(--dim); letter-spacing: 2.5px; text-transform: uppercase; margin-top: 6px; }
+
+.sb-link {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 18px; font-size: 12px; color: var(--muted);
+  border-left: 2px solid transparent; cursor: pointer;
+  text-decoration: none; transition: all 0.13s;
+}
+.sb-link:hover { color: var(--text); background: rgba(68,183,139,0.05); }
+.sb-link.active { color: var(--django); border-left-color: var(--django); background: rgba(68,183,139,0.07); }
+.sb-link .ic { font-size: 13px; width: 16px; flex-shrink: 0; }
+.sb-link .num { margin-left: auto; font-family: var(--mono); font-size: 9px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 1px 4px; color: var(--dim); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: 260px; flex: 1;
+  max-width: 860px; padding: 48px 44px 120px;
+}
+
+/* ── SECTION ── */
+.sec { margin-bottom: 72px; }
+.sec-eye { font-family: var(--mono); font-size: 10px; color: var(--django); letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 8px; }
+.sec-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+.sec-desc { font-size: 13.5px; color: var(--muted); line-height: 1.8; max-width: 620px; }
+.sec-desc strong { color: var(--text); }
+.divider { height: 1px; background: var(--border); margin: 52px 0; }
+
+/* ── INFO BOXES ── */
+.box {
+  border-radius: 8px; padding: 14px 18px; margin: 18px 0;
+  font-size: 13px; line-height: 1.75; display: flex; gap: 12px;
+}
+.box .bicon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.box.note   { background: rgba(91,170,255,0.07); border: 1px solid rgba(91,170,255,0.18); }
+.box.tip    { background: rgba(68,217,160,0.07); border: 1px solid rgba(68,217,160,0.18); }
+.box.warn   { background: rgba(255,107,107,0.07); border: 1px solid rgba(255,107,107,0.2); }
+.box.django { background: rgba(68,183,139,0.07); border: 1px solid rgba(68,183,139,0.2); }
+.box strong { color: var(--text); }
+.box code   { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 0 5px; font-family: var(--mono); font-size: 11px; color: var(--file); }
+
+/* ── CODE BLOCKS ── */
+.cblock { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+.chead {
+  background: var(--surface); padding: 9px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.chead-left { display: flex; align-items: center; gap: 10px; }
+.dots { display: flex; gap: 5px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.dr { background: #ff5f57; } .dy { background: #ffbd2e; } .dg { background: #28c840; }
+.fname { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.flabel {
+  font-family: var(--mono); font-size: 9px; padding: 2px 7px;
+  border-radius: 3px; letter-spacing: 1px;
+}
+.fl-cmd  { background: rgba(91,170,255,0.12); color: var(--cmd); border: 1px solid rgba(91,170,255,0.25); }
+.fl-file { background: rgba(255,179,71,0.12); color: var(--file); border: 1px solid rgba(255,179,71,0.25); }
+.fl-py   { background: rgba(68,183,139,0.12); color: var(--django); border: 1px solid rgba(68,183,139,0.25); }
+
+.cbtn {
+  font-family: var(--mono); font-size: 10px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); padding: 3px 9px; border-radius: 4px;
+  cursor: pointer; transition: all 0.13s;
+}
+.cbtn:hover { color: var(--text); border-color: var(--muted); }
+.cbtn.ok { color: var(--tip); border-color: var(--tip); }
+
+.cbody {
+  background: #050810; padding: 20px 22px;
+  overflow-x: auto; font-family: var(--mono);
+  font-size: 12.5px; line-height: 1.85; tab-size: 4;
+  white-space: pre;
+}
+
+/* syntax */
+.kw  { color: #ff7b72; }   /* keyword */
+.fn  { color: #d2a8ff; }   /* function */
+.st  { color: #a5d6ff; }   /* string */
+.cm  { color: #484f58; font-style: italic; }  /* comment */
+.nm  { color: #79c0ff; }   /* number/bool */
+.va  { color: #ffa657; }   /* variable */
+.cl  { color: #ffa657; }   /* class */
+.op  { color: #ff7b72; }   /* operator */
+.dk  { color: var(--django); }  /* django green */
+.pu  { color: #c07aff; }   /* purple */
+.ye  { color: #e3b341; }   /* yellow */
+.gr  { color: var(--tip); }  /* green */
+.bl  { color: var(--cmd); }  /* blue */
+.pa  { color: #a5d6ff; }   /* path */
+.ev  { color: #c07aff; }   /* env var */
+
+/* ── LINE ANNOTATION ── */
+.ann-wrap { position: relative; }
+.ann-row { display: flex; gap: 0; }
+.ann-code { flex: 1; min-width: 0; }
+.ann-note {
+  width: 200px; flex-shrink: 0; padding: 0 0 0 16px;
+  font-size: 11px; color: var(--muted); font-family: var(--mono);
+  border-left: 1px solid var(--border); margin-left: 16px;
+  display: flex; align-items: center; font-style: italic;
+}
+
+/* ── STEPS ── */
+.step {
+  margin: 20px 0; border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.step-hd {
+  background: var(--surface); padding: 13px 18px;
+  display: flex; align-items: center; gap: 13px;
+  cursor: pointer; user-select: none; transition: background 0.13s;
+}
+.step-hd:hover { background: var(--surface2); }
+.step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.step-ttl { font-size: 14px; font-weight: 700; flex: 1; }
+.step-badge { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 3px; letter-spacing: 1px; }
+.sb-cmd  { background: rgba(91,170,255,0.12); color: var(--cmd); border: 1px solid rgba(91,170,255,0.25); }
+.sb-file { background: rgba(255,179,71,0.12); color: var(--file); border: 1px solid rgba(255,179,71,0.25); }
+.sb-idea { background: rgba(192,122,255,0.12); color: var(--concept); border: 1px solid rgba(192,122,255,0.25); }
+.sb-djg  { background: rgba(68,183,139,0.12); color: var(--django); border: 1px solid rgba(68,183,139,0.25); }
+.chev { color: var(--muted); font-size: 11px; transition: transform 0.2s; }
+.step-hd.open .chev { transform: rotate(90deg); }
+
+.step-bd {
+  display: none; padding: 20px 22px;
+  border-top: 1px solid var(--border); background: var(--bg);
+}
+.step-bd.open { display: block; }
+
+.exp { font-size: 13px; color: var(--muted); line-height: 1.85; margin-bottom: 14px; }
+.exp strong { color: var(--text); }
+.exp code { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-family: var(--mono); font-size: 11px; color: var(--file); }
+.exp a { color: var(--django); }
+
+/* ── TABLE ── */
+.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 14px 0; }
+.tbl th { background: var(--surface); padding: 9px 13px; text-align: left; font-weight: 600; border: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+.tbl td { padding: 9px 13px; border: 1px solid var(--border); color: var(--muted); line-height: 1.6; vertical-align: top; }
+.tbl td strong { color: var(--text); }
+.tbl tr:hover td { background: rgba(255,255,255,0.015); }
+
+/* ── FLOW DIAGRAM ── */
+.flow { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 28px; margin: 20px 0; }
+.flow-row { display: flex; align-items: center; gap: 0; margin: 6px 0; flex-wrap: wrap; }
+.flow-box {
+  padding: 8px 16px; border-radius: 6px; font-size: 12px; font-family: var(--mono);
+  border: 1px solid; font-weight: 500; white-space: nowrap;
+}
+.flow-arrow { color: var(--muted); padding: 0 10px; font-size: 16px; }
+
+/* ── CHECKLIST ── */
+.cl-item { display: flex; align-items: flex-start; gap: 11px; padding: 9px 0; border-bottom: 1px solid rgba(30,45,64,0.6); }
+.cl-item:last-child { border-bottom: none; }
+.cl-chk {
+  width: 19px; height: 19px; border: 1.5px solid var(--border2);
+  border-radius: 4px; flex-shrink: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; margin-top: 1px; transition: all 0.13s;
+}
+.cl-chk.done { background: var(--django); border-color: var(--django); color: #000; }
+.cl-lbl { font-size: 13px; line-height: 1.55; }
+.cl-lbl code { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 0 5px; font-family: var(--mono); font-size: 11px; color: var(--file); }
+
+/* ── INLINE CODE ── */
+code { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-family: var(--mono); font-size: 11px; color: var(--file); }
+
+/* ── FILE BADGE ── */
+.fbadge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px; font-family: var(--mono);
+  font-size: 11px; color: var(--file); margin: 4px 4px 4px 0;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.sec { animation: fadeUp 0.35s ease both; }
+</style>
+</head>
+<body>
+<div id="progress"><div id="progressFill"></div></div>
+
+<div class="wrap">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">☕ CafeLocate ML</div>
+    <div class="sb-sub">Django Project Setup — Phase 1</div>
+  </div>
+
+  <div class="sb-section">Overview</div>
+  <a class="sb-link active" href="#overview"><span class="ic">🧠</span> What is Django?</a>
+  <a class="sb-link" href="#commands"><span class="ic">⚡</span> Setup Commands</a>
+
+  <div class="sb-section">Configuration Files</div>
+  <a class="sb-link" href="#settings"><span class="ic">⚙️</span> settings.py <span class="num">KEY</span></a>
+  <a class="sb-link" href="#urls"><span class="ic">🛣️</span> urls.py</a>
+  <a class="sb-link" href="#wsgi"><span class="ic">🚀</span> wsgi.py</a>
+
+  <div class="sb-section">API App</div>
+  <a class="sb-link" href="#models"><span class="ic">🗃️</span> models.py <span class="num">KEY</span></a>
+  <a class="sb-link" href="#serializers"><span class="ic">🔄</span> serializers.py</a>
+  <a class="sb-link" href="#views"><span class="ic">👁️</span> views.py <span class="num">KEY</span></a>
+  <a class="sb-link" href="#api-urls"><span class="ic">🛣️</span> api/urls.py</a>
+  <a class="sb-link" href="#admin"><span class="ic">🔧</span> admin.py</a>
+
+  <div class="sb-section">ML Engine App</div>
+  <a class="sb-link" href="#predictor"><span class="ic">🌲</span> predictor.py</a>
+  <a class="sb-link" href="#ml-views"><span class="ic">📮</span> ml_engine/views.py</a>
+
+  <div class="sb-section">Final Steps</div>
+  <a class="sb-link" href="#migrations"><span class="ic">📜</span> Migrations</a>
+  <a class="sb-link" href="#verify"><span class="ic">✅</span> Verify Everything</a>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ══════════════════ OVERVIEW ══════════════════ -->
+<section class="sec" id="overview">
+  <div class="sec-eye">Django Setup · Introduction</div>
+  <div class="sec-title">What is Django and how does it work?</div>
+  <div class="sec-desc">Django is a Python web framework — it gives you a pre-built structure so you don't have to write a web server from scratch. Think of it as a kitchen that already has a stove, sink, and counters. You just need to cook (write your feature code).</div>
+
+  <div class="box django">
+    <span class="bicon">🎯</span>
+    <div><strong>For your project:</strong> Django runs on port 8000 and acts as the API server. When your frontend (Leaflet.js map) sends a request like "find cafés near this point," Django receives it, queries PostgreSQL, and sends back JSON data.</div>
+  </div>
+
+  <p style="font-size:13px;color:var(--muted);line-height:1.8;margin:20px 0 10px;">Here's how a request flows through Django:</p>
+
+  <div class="flow">
+    <div class="flow-row">
+      <div class="flow-box" style="background:rgba(91,170,255,0.1);color:var(--cmd);border-color:rgba(91,170,255,0.3)">Browser / Leaflet.js</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box" style="background:rgba(68,183,139,0.1);color:var(--django);border-color:rgba(68,183,139,0.3)">urls.py (router)</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box" style="background:rgba(192,122,255,0.1);color:var(--concept);border-color:rgba(192,122,255,0.3)">views.py (logic)</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box" style="background:rgba(255,179,71,0.1);color:var(--file);border-color:rgba(255,179,71,0.3)">models.py (database)</div>
+    </div>
+    <div class="flow-row" style="margin-top:12px;">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);">HTTP POST { lat, lng }  →  match /api/cafes/nearby/  →  run query logic  →  SELECT FROM cafes WHERE ST_DWithin(...)  →  return JSON</div>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:var(--muted);line-height:1.8;margin:20px 0 10px;">Files you'll create in this phase:</p>
+  <div>
+    <span class="fbadge">⚙️ settings.py</span>
+    <span class="fbadge">🛣️ urls.py (project)</span>
+    <span class="fbadge">🗃️ api/models.py</span>
+    <span class="fbadge">🔄 api/serializers.py</span>
+    <span class="fbadge">👁️ api/views.py</span>
+    <span class="fbadge">🛣️ api/urls.py</span>
+    <span class="fbadge">🔧 api/admin.py</span>
+    <span class="fbadge">🌲 ml_engine/predictor.py</span>
+    <span class="fbadge">📮 ml_engine/views.py</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ COMMANDS ══════════════════ -->
+<section class="sec" id="commands">
+  <div class="sec-eye">Step 1 · Terminal</div>
+  <div class="sec-title">Setup Commands — Run These First</div>
+  <div class="sec-desc">Before writing any code, run these terminal commands to generate the Django project structure. <strong>Run them in order, from inside your <code>backend/</code> folder.</strong></div>
+
+  <div class="box warn">
+    <span class="bicon">⚠️</span>
+    <div><strong>Prerequisites:</strong> Your virtual environment must be active (<code>(venv)</code> shown in terminal) and <code>pip install -r requirements.txt</code> must have already been run successfully.</div>
+  </div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">Terminal — run from <code>cafelocate/backend/</code></span>
+        <span class="flabel fl-cmd">TERMINAL</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="cm"># ─── Make sure you're in the backend/ folder ────────────────────────────
+# Your prompt should look like: (venv) C:\...\cafelocate\backend&gt;</span>
+
+<span class="cm"># Step 1: Create the Django project
+# The dot (.) at the end means "create it HERE, not in a subfolder"</span>
+<span class="gr">django-admin startproject cafelocate .</span>
+
+<span class="cm"># Step 2: Create the "api" Django app
+# This is for all your REST API endpoints (nearby cafes, top5, suitability)</span>
+<span class="gr">python manage.py startapp api</span>
+
+<span class="cm"># Step 3: Create the "ml_engine" Django app
+# This serves the Random Forest model predictions</span>
+<span class="gr">python manage.py startapp ml_engine</span>
+
+<span class="cm"># Step 4: Verify what was generated</span>
+<span class="gr">dir</span>   <span class="cm"># Windows  (use: ls  on Mac/Linux)</span>
+
+<span class="cm"># You should see:
+#   cafelocate/   ← project settings package
+#   api/          ← API app
+#   ml_engine/    ← ML app
+#   manage.py     ← command runner</span></div>
+  </div>
+
+  <div class="box tip">
+    <span class="bicon">✅</span>
+    <div><strong>What just happened?</strong> Django auto-generated ~15 files for you. You don't write these from scratch — Django scaffolds them. You will <em>edit</em> them, not create them. The next sections show exactly what to put in each file.</div>
+  </div>
+
+  <table class="tbl" style="margin-top:20px;">
+    <thead><tr><th>Command</th><th>What it does</th><th>Files it generates</th></tr></thead>
+    <tbody>
+      <tr><td><strong>django-admin startproject cafelocate .</strong></td><td>Creates the project control center</td><td>manage.py, cafelocate/__init__.py, settings.py, urls.py, wsgi.py, asgi.py</td></tr>
+      <tr><td><strong>python manage.py startapp api</strong></td><td>Creates the API feature app</td><td>api/models.py, views.py, admin.py, apps.py, tests.py, migrations/</td></tr>
+      <tr><td><strong>python manage.py startapp ml_engine</strong></td><td>Creates the ML serving app</td><td>ml_engine/models.py, views.py, admin.py, apps.py, tests.py, migrations/</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ SETTINGS ══════════════════ -->
+<section class="sec" id="settings">
+  <div class="sec-eye">Config File 1 · Most Important</div>
+  <div class="sec-title">settings.py — Project Configuration</div>
+  <div class="sec-desc">This is the <strong>master config file</strong> for your entire Django project. It controls everything: which apps are installed, which database to use, where secret keys are, security settings, and more. You'll edit this file more than any other.</div>
+
+  <div class="box note">
+    <span class="bicon">📁</span>
+    <div><strong>Location:</strong> <code>backend/cafelocate/settings.py</code> — Django already created this file. You are <em>replacing/editing</em> the content, not creating it from scratch.</div>
+  </div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/cafelocate/settings.py</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="cm">"""
+CafeLocate ML — Django Settings
+Full configuration for the project.
+"""</span>
+<span class="kw">import</span> <span class="va">os</span>
+<span class="kw">from</span> <span class="va">pathlib</span> <span class="kw">import</span> <span class="va">Path</span>
+<span class="kw">import</span> <span class="va">environ</span>
+
+<span class="cm"># ─── BASE DIRECTORY ────────────────────────────────────────────────────────────
+# BASE_DIR points to the backend/ folder (where manage.py lives)
+# Path(__file__) = this settings.py file
+# .resolve() = get the absolute path
+# .parent.parent = go up 2 levels (cafelocate/ → backend/)</span>
+<span class="va">BASE_DIR</span> <span class="op">=</span> <span class="fn">Path</span><span class="op">(</span><span class="va">__file__</span><span class="op">).</span><span class="fn">resolve</span><span class="op">().</span><span class="va">parent</span><span class="op">.</span><span class="va">parent</span>
+
+<span class="cm"># ─── LOAD .env FILE ────────────────────────────────────────────────────────────
+# env() reads values from .env file so we never hardcode secrets in this file</span>
+<span class="va">env</span> <span class="op">=</span> <span class="va">environ</span><span class="op">.</span><span class="fn">Env</span><span class="op">(</span>
+    <span class="cm"># Define types and defaults for each variable</span>
+    <span class="va">DEBUG</span><span class="op">=</span><span class="op">(</span><span class="fn">bool</span><span class="op">,</span> <span class="nm">False</span><span class="op">),</span>
+    <span class="va">ALLOWED_HOSTS</span><span class="op">=</span><span class="op">(</span><span class="fn">list</span><span class="op">,</span> <span class="op">[]</span><span class="op">)</span>
+<span class="op">)</span>
+<span class="va">environ</span><span class="op">.</span><span class="va">Env</span><span class="op">.</span><span class="fn">read_env</span><span class="op">(</span><span class="va">BASE_DIR</span> <span class="op">/</span> <span class="st">'.env'</span><span class="op">)</span>   <span class="cm"># reads backend/.env</span>
+
+
+<span class="cm"># ─── SECURITY ──────────────────────────────────────────────────────────────────</span>
+<span class="cm"># SECRET_KEY: used to sign cookies and CSRF tokens. NEVER share this.</span>
+<span class="va">SECRET_KEY</span> <span class="op">=</span> <span class="va">env</span><span class="op">(</span><span class="st">'SECRET_KEY'</span><span class="op">)</span>
+
+<span class="cm"># DEBUG: True = show detailed error pages (development only!)
+# In production, set DEBUG=False in .env</span>
+<span class="va">DEBUG</span> <span class="op">=</span> <span class="va">env</span><span class="op">(</span><span class="st">'DEBUG'</span><span class="op">)</span>
+
+<span class="cm"># ALLOWED_HOSTS: which domain names can access this server
+# During development: localhost and 127.0.0.1</span>
+<span class="va">ALLOWED_HOSTS</span> <span class="op">=</span> <span class="va">env</span><span class="op">.</span><span class="fn">list</span><span class="op">(</span><span class="st">'ALLOWED_HOSTS'</span><span class="op">,</span> <span class="va">default</span><span class="op">=</span><span class="op">[</span><span class="st">'localhost'</span><span class="op">,</span> <span class="st">'127.0.0.1'</span><span class="op">]</span><span class="op">)</span>
+
+
+<span class="cm"># ─── INSTALLED APPS ────────────────────────────────────────────────────────────
+# Django only uses apps listed here. Order matters for some cases.
+# Add YOUR apps at the bottom.</span>
+<span class="va">INSTALLED_APPS</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="cm"># ── Django built-ins (leave these alone) ──</span>
+    <span class="st">'django.contrib.admin'</span><span class="op">,</span>        <span class="cm"># admin panel at /admin/</span>
+    <span class="st">'django.contrib.auth'</span><span class="op">,</span>         <span class="cm"># user authentication system</span>
+    <span class="st">'django.contrib.contenttypes'</span><span class="op">,</span>  <span class="cm"># required by auth</span>
+    <span class="st">'django.contrib.sessions'</span><span class="op">,</span>     <span class="cm"># session storage</span>
+    <span class="st">'django.contrib.messages'</span><span class="op">,</span>     <span class="cm"># flash messages</span>
+    <span class="st">'django.contrib.staticfiles'</span><span class="op">,</span>  <span class="cm"># serving CSS/JS files</span>
+    <span class="st">'django.contrib.gis'</span><span class="op">,</span>          <span class="cm"># ← GIS support (PostGIS queries)</span>
+
+    <span class="cm"># ── Third-party packages ──</span>
+    <span class="st">'rest_framework'</span><span class="op">,</span>              <span class="cm"># Django REST Framework — turns Django into an API</span>
+    <span class="st">'corsheaders'</span><span class="op">,</span>                 <span class="cm"># CORS — allows frontend to call this API</span>
+
+    <span class="cm"># ── Your apps ──</span>
+    <span class="st">'api'</span><span class="op">,</span>                         <span class="cm"># REST API endpoints (nearby, top5, suitability)</span>
+    <span class="st">'ml_engine'</span><span class="op">,</span>                   <span class="cm"># ML prediction endpoint</span>
+<span class="op">]</span>
+
+
+<span class="cm"># ─── MIDDLEWARE ────────────────────────────────────────────────────────────────
+# Middleware runs on EVERY request before it reaches your view.
+# CorsMiddleware MUST be first so it handles CORS headers before anything else.</span>
+<span class="va">MIDDLEWARE</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="st">'corsheaders.middleware.CorsMiddleware'</span><span class="op">,</span>           <span class="cm"># ← MUST be first</span>
+    <span class="st">'django.middleware.security.SecurityMiddleware'</span><span class="op">,</span>
+    <span class="st">'django.contrib.sessions.middleware.SessionMiddleware'</span><span class="op">,</span>
+    <span class="st">'django.middleware.common.CommonMiddleware'</span><span class="op">,</span>
+    <span class="st">'django.middleware.csrf.CsrfViewMiddleware'</span><span class="op">,</span>
+    <span class="st">'django.contrib.auth.middleware.AuthenticationMiddleware'</span><span class="op">,</span>
+    <span class="st">'django.contrib.messages.middleware.MessageMiddleware'</span><span class="op">,</span>
+    <span class="st">'django.middleware.clickjacking.XFrameOptionsMiddleware'</span><span class="op">,</span>
+<span class="op">]</span>
+
+
+<span class="cm"># ─── URL CONFIGURATION ─────────────────────────────────────────────────────────
+# Tells Django where the main urls.py file is</span>
+<span class="va">ROOT_URLCONF</span> <span class="op">=</span> <span class="st">'cafelocate.urls'</span>   <span class="cm"># = cafelocate/urls.py</span>
+
+
+<span class="cm"># ─── TEMPLATES ─────────────────────────────────────────────────────────────────
+# Template engine config (for HTML responses — used by admin panel)</span>
+<span class="va">TEMPLATES</span> <span class="op">=</span> <span class="op">[{</span>
+    <span class="st">'BACKEND'</span><span class="op">:</span> <span class="st">'django.template.backends.django.DjangoTemplates'</span><span class="op">,</span>
+    <span class="st">'DIRS'</span><span class="op">:</span> <span class="op">[]</span><span class="op">,</span>
+    <span class="st">'APP_DIRS'</span><span class="op">:</span> <span class="nm">True</span><span class="op">,</span>
+    <span class="st">'OPTIONS'</span><span class="op">:</span> <span class="op">{</span><span class="st">'context_processors'</span><span class="op">:</span> <span class="op">[</span>
+        <span class="st">'django.template.context_processors.debug'</span><span class="op">,</span>
+        <span class="st">'django.template.context_processors.request'</span><span class="op">,</span>
+        <span class="st">'django.contrib.auth.context_processors.auth'</span><span class="op">,</span>
+        <span class="st">'django.contrib.messages.context_processors.messages'</span><span class="op">,</span>
+    <span class="op">]}</span><span class="op">,</span>
+<span class="op">}]</span>
+
+<span class="va">WSGI_APPLICATION</span> <span class="op">=</span> <span class="st">'cafelocate.wsgi.application'</span>
+
+
+<span class="cm"># ─── DATABASE ──────────────────────────────────────────────────────────────────
+# Using PostGIS backend so Django understands spatial/geometry fields.
+# All values come from .env file — never hardcode passwords here.</span>
+<span class="va">DATABASES</span> <span class="op">=</span> <span class="op">{</span>
+    <span class="st">'default'</span><span class="op">:</span> <span class="op">{</span>
+        <span class="st">'ENGINE'</span><span class="op">:</span>   <span class="st">'django.contrib.gis.db.backends.postgis'</span><span class="op">,</span>
+        <span class="cm">#            ↑ GIS-aware PostgreSQL backend (not regular 'postgresql')</span>
+        <span class="st">'NAME'</span><span class="op">:</span>     <span class="fn">env</span><span class="op">(</span><span class="st">'DB_NAME'</span><span class="op">)</span><span class="op">,</span>       <span class="cm"># cafelocate_db</span>
+        <span class="st">'USER'</span><span class="op">:</span>     <span class="fn">env</span><span class="op">(</span><span class="st">'DB_USER'</span><span class="op">)</span><span class="op">,</span>       <span class="cm"># cafelocate_user</span>
+        <span class="st">'PASSWORD'</span><span class="op">:</span> <span class="fn">env</span><span class="op">(</span><span class="st">'DB_PASSWORD'</span><span class="op">)</span><span class="op">,</span>   <span class="cm"># from .env</span>
+        <span class="st">'HOST'</span><span class="op">:</span>     <span class="fn">env</span><span class="op">(</span><span class="st">'DB_HOST'</span><span class="op">,</span> <span class="va">default</span><span class="op">=</span><span class="st">'localhost'</span><span class="op">)</span><span class="op">,</span>
+        <span class="st">'PORT'</span><span class="op">:</span>     <span class="fn">env</span><span class="op">(</span><span class="st">'DB_PORT'</span><span class="op">,</span> <span class="va">default</span><span class="op">=</span><span class="st">'5432'</span><span class="op">)</span><span class="op">,</span>
+    <span class="op">}</span>
+<span class="op">}</span>
+
+
+<span class="cm"># ─── DJANGO REST FRAMEWORK ─────────────────────────────────────────────────────
+# Controls how the API behaves globally</span>
+<span class="va">REST_FRAMEWORK</span> <span class="op">=</span> <span class="op">{</span>
+    <span class="cm"># Default: return JSON (not HTML)</span>
+    <span class="st">'DEFAULT_RENDERER_CLASSES'</span><span class="op">:</span> <span class="op">[</span>
+        <span class="st">'rest_framework.renderers.JSONRenderer'</span><span class="op">,</span>
+    <span class="op">]</span><span class="op">,</span>
+    <span class="cm"># How incoming data is parsed</span>
+    <span class="st">'DEFAULT_PARSER_CLASSES'</span><span class="op">:</span> <span class="op">[</span>
+        <span class="st">'rest_framework.parsers.JSONParser'</span><span class="op">,</span>
+    <span class="op">]</span><span class="op">,</span>
+<span class="op">}</span>
+
+
+<span class="cm"># ─── CORS SETTINGS ─────────────────────────────────────────────────────────────
+# CORS = Cross-Origin Resource Sharing
+# Without this, the browser blocks JavaScript from calling a different port.
+# Your frontend runs on port 5500, backend on 8000 → different "origins" → CORS needed.</span>
+<span class="va">CORS_ALLOWED_ORIGINS</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="st">"http://localhost:5500"</span><span class="op">,</span>     <span class="cm"># VS Code Live Server</span>
+    <span class="st">"http://127.0.0.1:5500"</span><span class="op">,</span>
+    <span class="st">"http://localhost:3000"</span><span class="op">,</span>     <span class="cm"># if you ever switch to React</span>
+<span class="op">]</span>
+
+<span class="cm"># Allow these HTTP methods from the frontend</span>
+<span class="va">CORS_ALLOW_METHODS</span> <span class="op">=</span> <span class="op">[</span><span class="st">'GET'</span><span class="op">,</span> <span class="st">'POST'</span><span class="op">,</span> <span class="st">'OPTIONS'</span><span class="op">]</span>
+
+<span class="cm"># Allow the Authorization header (for JWT tokens)</span>
+<span class="va">CORS_ALLOW_HEADERS</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="st">'accept'</span><span class="op">,</span> <span class="st">'authorization'</span><span class="op">,</span> <span class="st">'content-type'</span><span class="op">,</span> <span class="st">'x-csrftoken'</span><span class="op">,</span>
+<span class="op">]</span>
+
+
+<span class="cm"># ─── GOOGLE API KEYS ───────────────────────────────────────────────────────────
+# Stored here so views.py can access them with: settings.GOOGLE_PLACES_API_KEY</span>
+<span class="va">GOOGLE_PLACES_API_KEY</span> <span class="op">=</span> <span class="fn">env</span><span class="op">(</span><span class="st">'GOOGLE_PLACES_API_KEY'</span><span class="op">)</span>
+<span class="va">GOOGLE_CLIENT_ID</span>      <span class="op">=</span> <span class="fn">env</span><span class="op">(</span><span class="st">'GOOGLE_CLIENT_ID'</span><span class="op">)</span>
+<span class="va">GOOGLE_CLIENT_SECRET</span>  <span class="op">=</span> <span class="fn">env</span><span class="op">(</span><span class="st">'GOOGLE_CLIENT_SECRET'</span><span class="op">)</span>
+
+
+<span class="cm"># ─── PASSWORD VALIDATORS ───────────────────────────────────────────────────────</span>
+<span class="va">AUTH_PASSWORD_VALIDATORS</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="op">{</span><span class="st">'NAME'</span><span class="op">:</span> <span class="st">'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'</span><span class="op">}</span><span class="op">,</span>
+    <span class="op">{</span><span class="st">'NAME'</span><span class="op">:</span> <span class="st">'django.contrib.auth.password_validation.MinimumLengthValidator'</span><span class="op">}</span><span class="op">,</span>
+    <span class="op">{</span><span class="st">'NAME'</span><span class="op">:</span> <span class="st">'django.contrib.auth.password_validation.CommonPasswordValidator'</span><span class="op">}</span><span class="op">,</span>
+    <span class="op">{</span><span class="st">'NAME'</span><span class="op">:</span> <span class="st">'django.contrib.auth.password_validation.NumericPasswordValidator'</span><span class="op">}</span><span class="op">,</span>
+<span class="op">]</span>
+
+
+<span class="cm"># ─── LOCALIZATION ──────────────────────────────────────────────────────────────</span>
+<span class="va">LANGUAGE_CODE</span> <span class="op">=</span> <span class="st">'en-us'</span>
+<span class="va">TIME_ZONE</span>     <span class="op">=</span> <span class="st">'Asia/Kathmandu'</span>   <span class="cm"># Nepal Time (UTC+5:45)</span>
+<span class="va">USE_I18N</span>      <span class="op">=</span> <span class="nm">True</span>
+<span class="va">USE_TZ</span>        <span class="op">=</span> <span class="nm">True</span>
+
+
+<span class="cm"># ─── STATIC FILES ──────────────────────────────────────────────────────────────
+# Where Django looks for CSS/JS files for the admin panel</span>
+<span class="va">STATIC_URL</span>  <span class="op">=</span> <span class="st">'/static/'</span>
+<span class="va">STATIC_ROOT</span> <span class="op">=</span> <span class="va">BASE_DIR</span> <span class="op">/</span> <span class="st">'staticfiles'</span>
+
+
+<span class="cm"># ─── DEFAULT PRIMARY KEY ───────────────────────────────────────────────────────
+# Auto-increment integer IDs for all models (modern Django default)</span>
+<span class="va">DEFAULT_AUTO_FIELD</span> <span class="op">=</span> <span class="st">'django.db.models.BigAutoField'</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ URLS ══════════════════ -->
+<section class="sec" id="urls">
+  <div class="sec-eye">Config File 2</div>
+  <div class="sec-title">urls.py — The URL Router</div>
+  <div class="sec-desc">This file decides which view function handles each URL path. When a request comes in, Django checks this file top-to-bottom until it finds a matching pattern.</div>
+
+  <div class="box note">
+    <span class="bicon">📁</span>
+    <div><strong>Location:</strong> <code>backend/cafelocate/urls.py</code> — This is the project-level router. Each app (api, ml_engine) has its OWN urls.py that gets plugged in here.</div>
+  </div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/cafelocate/urls.py</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">from</span> <span class="va">django.contrib</span> <span class="kw">import</span> <span class="va">admin</span>
+<span class="kw">from</span> <span class="va">django.urls</span> <span class="kw">import</span> <span class="va">path</span><span class="op">,</span> <span class="va">include</span>
+
+<span class="va">urlpatterns</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="cm"># Django admin panel — visit http://localhost:8000/admin/</span>
+    <span class="fn">path</span><span class="op">(</span><span class="st">'admin/'</span><span class="op">,</span> <span class="va">admin</span><span class="op">.</span><span class="va">site</span><span class="op">.</span><span class="va">urls</span><span class="op">)</span><span class="op">,</span>
+
+    <span class="cm"># All API routes — delegates to api/urls.py
+    # Any URL starting with "api/" is handled by the api app
+    # Example: /api/cafes/nearby/ → goes to api/urls.py for further routing</span>
+    <span class="fn">path</span><span class="op">(</span><span class="st">'api/'</span><span class="op">,</span> <span class="fn">include</span><span class="op">(</span><span class="st">'api.urls'</span><span class="op">))</span><span class="op">,</span>
+
+    <span class="cm"># ML prediction route — delegates to ml_engine/urls.py
+    # /api/predict/ → handled by ml_engine</span>
+    <span class="fn">path</span><span class="op">(</span><span class="st">'api/'</span><span class="op">,</span> <span class="fn">include</span><span class="op">(</span><span class="st">'ml_engine.urls'</span><span class="op">))</span><span class="op">,</span>
+<span class="op">]</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ WSGI ══════════════════ -->
+<section class="sec" id="wsgi">
+  <div class="sec-eye">Config File 3</div>
+  <div class="sec-title">wsgi.py — Production Server Entry Point</div>
+  <div class="sec-desc">Django auto-generates this file. You <strong>don't need to edit it</strong>. It's only used in production (Phase 7) when a real web server like Gunicorn runs your app. Just know what it is.</div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/cafelocate/wsgi.py — auto-generated, no edits needed</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+    </div>
+    <div class="cbody"><span class="cm">"""
+WSGI config for cafelocate project.
+Used by production servers (Gunicorn, uWSGI).
+Development uses: python manage.py runserver (not this file).
+"""</span>
+<span class="kw">import</span> <span class="va">os</span>
+<span class="kw">from</span> <span class="va">django.core.wsgi</span> <span class="kw">import</span> <span class="fn">get_wsgi_application</span>
+
+<span class="va">os</span><span class="op">.</span><span class="va">environ</span><span class="op">.</span><span class="fn">setdefault</span><span class="op">(</span><span class="st">'DJANGO_SETTINGS_MODULE'</span><span class="op">,</span> <span class="st">'cafelocate.settings'</span><span class="op">)</span>
+<span class="va">application</span> <span class="op">=</span> <span class="fn">get_wsgi_application</span><span class="op">()</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ MODELS ══════════════════ -->
+<section class="sec" id="models">
+  <div class="sec-eye">API App · Database Tables</div>
+  <div class="sec-title">api/models.py — Database Table Definitions</div>
+  <div class="sec-desc">Models are Python classes that define your database tables. Django reads these classes and creates the actual SQL tables for you. Each class = one table. Each attribute = one column.</div>
+
+  <div class="box django">
+    <span class="bicon">💡</span>
+    <div><strong>How it works:</strong> You write <code>class Cafe(models.Model)</code> in Python → run <code>python manage.py makemigrations</code> → Django generates SQL → run <code>python manage.py migrate</code> → table is created in PostgreSQL. You never write raw SQL to create tables.</div>
+  </div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/api/models.py</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">from</span> <span class="va">django.contrib.gis.db</span> <span class="kw">import</span> <span class="va">models</span>
+<span class="cm">#   ↑ Use GIS models (not regular django.db.models)
+#     This gives us PointField, PolygonField, etc.</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# TABLE 1: Cafe
+# Stores every café in Kathmandu collected from Google Places API
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">Cafe</span><span class="op">(</span><span class="va">models</span><span class="op">.</span><span class="va">Model</span><span class="op">)</span><span class="op">:</span>
+
+    <span class="cm"># Google's unique ID for this place (e.g. "ChIJN1t_tDeuEmsRUsoyG83frY4")</span>
+    <span class="va">place_id</span>     <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">CharField</span><span class="op">(</span><span class="va">max_length</span><span class="op">=</span><span class="nm">100</span><span class="op">,</span> <span class="va">unique</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+
+    <span class="cm"># Name of the café</span>
+    <span class="va">name</span>         <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">CharField</span><span class="op">(</span><span class="va">max_length</span><span class="op">=</span><span class="nm">255</span><span class="op">)</span>
+
+    <span class="cm"># Type: "coffee_shop", "bakery", "dessert_shop", "restaurant"</span>
+    <span class="va">cafe_type</span>    <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">CharField</span><span class="op">(</span><span class="va">max_length</span><span class="op">=</span><span class="nm">50</span><span class="op">)</span>
+
+    <span class="cm"># Latitude and longitude stored as regular numbers (for reference)</span>
+    <span class="va">latitude</span>     <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">FloatField</span><span class="op">()</span>
+    <span class="va">longitude</span>    <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">FloatField</span><span class="op">()</span>
+
+    <span class="cm"># PointField: stores the location as a PostGIS geometry object
+    # srid=4326 means WGS84 coordinate system (standard GPS coordinates)
+    # This field enables spatial queries like ST_DWithin()
+    # null=True because we might add data without geometry first</span>
+    <span class="va">location</span>     <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">PointField</span><span class="op">(</span><span class="va">srid</span><span class="op">=</span><span class="nm">4326</span><span class="op">,</span> <span class="va">null</span><span class="op">=</span><span class="nm">True</span><span class="op">,</span> <span class="va">blank</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+
+    <span class="cm"># Rating 1.0–5.0 from Google</span>
+    <span class="va">rating</span>       <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">FloatField</span><span class="op">(</span><span class="va">null</span><span class="op">=</span><span class="nm">True</span><span class="op">,</span> <span class="va">blank</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+
+    <span class="cm"># Number of reviews on Google Maps</span>
+    <span class="va">review_count</span> <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">IntegerField</span><span class="op">(</span><span class="va">default</span><span class="op">=</span><span class="nm">0</span><span class="op">)</span>
+
+    <span class="cm"># Is it still open? Helps filter out closed businesses</span>
+    <span class="va">is_open</span>      <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">BooleanField</span><span class="op">(</span><span class="va">default</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+
+    <span class="cm"># When we collected this data from Google</span>
+    <span class="va">collected_at</span> <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">DateTimeField</span><span class="op">(</span><span class="va">auto_now_add</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+
+    <span class="kw">class</span> <span class="cl">Meta</span><span class="op">:</span>
+        <span class="va">db_table</span> <span class="op">=</span> <span class="st">'cafes'</span>   <span class="cm"># actual SQL table name</span>
+        <span class="va">ordering</span> <span class="op">=</span> <span class="op">[</span><span class="st">'-rating'</span><span class="op">]</span>  <span class="cm"># default order: highest rated first</span>
+
+    <span class="kw">def</span> <span class="fn">__str__</span><span class="op">(</span><span class="va">self</span><span class="op">)</span><span class="op">:</span>
+        <span class="kw">return</span> <span class="st">f"</span><span class="op">{</span><span class="va">self</span><span class="op">.</span><span class="va">name</span><span class="op">}</span><span class="st"> (</span><span class="op">{</span><span class="va">self</span><span class="op">.</span><span class="va">cafe_type</span><span class="op">}</span><span class="st">) — ⭐</span><span class="op">{</span><span class="va">self</span><span class="op">.</span><span class="va">rating</span><span class="op">}</span><span class="st">"</span>
+        <span class="cm"># shown in admin panel and shell: "Morning Brew (coffee_shop) — ⭐4.5"</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# TABLE 2: Ward
+# Kathmandu's 32 administrative wards with population data
+# from Nepal Census 2021
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">Ward</span><span class="op">(</span><span class="va">models</span><span class="op">.</span><span class="va">Model</span><span class="op">)</span><span class="op">:</span>
+
+    <span class="va">ward_number</span>       <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">IntegerField</span><span class="op">(</span><span class="va">unique</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+    <span class="va">population</span>        <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">IntegerField</span><span class="op">()</span>
+    <span class="va">households</span>        <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">IntegerField</span><span class="op">()</span>
+    <span class="va">area_sqkm</span>         <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">FloatField</span><span class="op">()</span>
+
+    <span class="cm"># Population density = population / area (calculated field)</span>
+    <span class="va">population_density</span> <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">FloatField</span><span class="op">()</span>
+
+    <span class="cm"># The actual boundary polygon of this ward
+    # MultiPolygonField handles wards with non-contiguous boundaries</span>
+    <span class="va">boundary</span>          <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">MultiPolygonField</span><span class="op">(</span><span class="va">srid</span><span class="op">=</span><span class="nm">4326</span><span class="op">,</span> <span class="va">null</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+
+    <span class="kw">class</span> <span class="cl">Meta</span><span class="op">:</span>
+        <span class="va">db_table</span> <span class="op">=</span> <span class="st">'wards'</span>
+
+    <span class="kw">def</span> <span class="fn">__str__</span><span class="op">(</span><span class="va">self</span><span class="op">)</span><span class="op">:</span>
+        <span class="kw">return</span> <span class="st">f"Ward </span><span class="op">{</span><span class="va">self</span><span class="op">.</span><span class="va">ward_number</span><span class="op">}</span><span class="st"> — Pop: </span><span class="op">{</span><span class="va">self</span><span class="op">.</span><span class="va">population</span><span class="op">:</span><span class="op">,</span><span class="op">}</span><span class="st">"</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# TABLE 3: Road
+# Road network of Kathmandu from OpenStreetMap
+# Used to compute road accessibility score in buffer area
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">Road</span><span class="op">(</span><span class="va">models</span><span class="op">.</span><span class="va">Model</span><span class="op">)</span><span class="op">:</span>
+
+    <span class="va">osm_id</span>      <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">BigIntegerField</span><span class="op">(</span><span class="va">unique</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+    <span class="cm"># Type: "primary", "secondary", "residential", "footway", etc.</span>
+    <span class="va">road_type</span>   <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">CharField</span><span class="op">(</span><span class="va">max_length</span><span class="op">=</span><span class="nm">50</span><span class="op">,</span> <span class="va">blank</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+    <span class="cm"># The road geometry as a line</span>
+    <span class="va">geometry</span>    <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">LineStringField</span><span class="op">(</span><span class="va">srid</span><span class="op">=</span><span class="nm">4326</span><span class="op">)</span>
+
+    <span class="kw">class</span> <span class="cl">Meta</span><span class="op">:</span>
+        <span class="va">db_table</span> <span class="op">=</span> <span class="st">'roads'</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# TABLE 4: UserProfile
+# Stores users who log in via Google OAuth
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">UserProfile</span><span class="op">(</span><span class="va">models</span><span class="op">.</span><span class="va">Model</span><span class="op">)</span><span class="op">:</span>
+
+    <span class="cm"># Google's unique ID for this user</span>
+    <span class="va">google_id</span>    <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">CharField</span><span class="op">(</span><span class="va">max_length</span><span class="op">=</span><span class="nm">100</span><span class="op">,</span> <span class="va">unique</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+    <span class="va">email</span>        <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">EmailField</span><span class="op">(</span><span class="va">unique</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+    <span class="va">name</span>         <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">CharField</span><span class="op">(</span><span class="va">max_length</span><span class="op">=</span><span class="nm">200</span><span class="op">)</span>
+    <span class="va">picture_url</span>  <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">URLField</span><span class="op">(</span><span class="va">blank</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+    <span class="va">joined_at</span>    <span class="op">=</span> <span class="va">models</span><span class="op">.</span><span class="fn">DateTimeField</span><span class="op">(</span><span class="va">auto_now_add</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+
+    <span class="kw">class</span> <span class="cl">Meta</span><span class="op">:</span>
+        <span class="va">db_table</span> <span class="op">=</span> <span class="st">'user_profiles'</span>
+
+    <span class="kw">def</span> <span class="fn">__str__</span><span class="op">(</span><span class="va">self</span><span class="op">)</span><span class="op">:</span>
+        <span class="kw">return</span> <span class="st">f"</span><span class="op">{</span><span class="va">self</span><span class="op">.</span><span class="va">name</span><span class="op">}</span><span class="st"> (</span><span class="op">{</span><span class="va">self</span><span class="op">.</span><span class="va">email</span><span class="op">}</span><span class="st">)"</span></div>
+  </div>
+
+  <div class="box tip" style="margin-top:16px;">
+    <span class="bicon">✅</span>
+    <div><strong>After writing models.py, run these two commands:</strong><br>
+    <code>python manage.py makemigrations</code> — Django reads your classes and writes the SQL migration file<br>
+    <code>python manage.py migrate</code> — Django executes that SQL and creates the tables in PostgreSQL</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ SERIALIZERS ══════════════════ -->
+<section class="sec" id="serializers">
+  <div class="sec-eye">API App · Data Conversion</div>
+  <div class="sec-title">api/serializers.py — Python Objects ↔ JSON</div>
+  <div class="sec-desc">When the frontend asks for café data, Django fetches a <code>Cafe</code> object from the database. The serializer converts that Python object into JSON that JavaScript can read. It also validates incoming JSON data from requests.</div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/api/serializers.py</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">from</span> <span class="va">rest_framework</span> <span class="kw">import</span> <span class="va">serializers</span>
+<span class="kw">from</span> <span class="va">.models</span> <span class="kw">import</span> <span class="va">Cafe</span><span class="op">,</span> <span class="va">Ward</span><span class="op">,</span> <span class="va">UserProfile</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# CafeSerializer
+# Converts a Cafe database object → JSON for the frontend
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">CafeSerializer</span><span class="op">(</span><span class="va">serializers</span><span class="op">.</span><span class="va">ModelSerializer</span><span class="op">)</span><span class="op">:</span>
+
+    <span class="cm"># Extra field not in the model — calculated from rating × log(reviews)
+    # SerializerMethodField = computed field, not directly from DB column</span>
+    <span class="va">score</span> <span class="op">=</span> <span class="va">serializers</span><span class="op">.</span><span class="fn">SerializerMethodField</span><span class="op">()</span>
+
+    <span class="kw">class</span> <span class="cl">Meta</span><span class="op">:</span>
+        <span class="va">model</span>  <span class="op">=</span> <span class="va">Cafe</span>      <span class="cm"># which model to serialize</span>
+        <span class="va">fields</span> <span class="op">=</span> <span class="op">[</span>         <span class="cm"># which fields to include in JSON output</span>
+            <span class="st">'id'</span><span class="op">,</span>
+            <span class="st">'place_id'</span><span class="op">,</span>
+            <span class="st">'name'</span><span class="op">,</span>
+            <span class="st">'cafe_type'</span><span class="op">,</span>
+            <span class="st">'latitude'</span><span class="op">,</span>
+            <span class="st">'longitude'</span><span class="op">,</span>
+            <span class="st">'rating'</span><span class="op">,</span>
+            <span class="st">'review_count'</span><span class="op">,</span>
+            <span class="st">'is_open'</span><span class="op">,</span>
+            <span class="st">'score'</span><span class="op">,</span>        <span class="cm"># our calculated field</span>
+        <span class="op">]</span>
+        <span class="cm"># NOTE: 'location' (PointField geometry) is intentionally excluded
+        #       because it produces complex GeoJSON that the frontend doesn't need.
+        #       We expose latitude/longitude instead (simpler for Leaflet.js).</span>
+
+    <span class="kw">def</span> <span class="fn">get_score</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">obj</span><span class="op">)</span><span class="op">:</span>
+        <span class="cm">"""Weighted score used to rank Top 5 cafés.
+        Formula: rating × log(review_count + 1)
+        Higher rating AND more reviews = higher score.
+        The +1 avoids log(0) error for cafes with 0 reviews.
+        """</span>
+        <span class="kw">import</span> <span class="va">math</span>
+        <span class="kw">if</span> <span class="va">obj</span><span class="op">.</span><span class="va">rating</span> <span class="kw">is</span> <span class="nm">None</span><span class="op">:</span>
+            <span class="kw">return</span> <span class="nm">0</span>
+        <span class="kw">return</span> <span class="fn">round</span><span class="op">(</span><span class="va">obj</span><span class="op">.</span><span class="va">rating</span> <span class="op">*</span> <span class="va">math</span><span class="op">.</span><span class="fn">log</span><span class="op">(</span><span class="va">obj</span><span class="op">.</span><span class="va">review_count</span> <span class="op">+</span> <span class="nm">1</span><span class="op">)</span><span class="op">,</span> <span class="nm">2</span><span class="op">)</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# SuitabilityRequestSerializer
+# Validates the incoming POST data when user pins a location
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">SuitabilityRequestSerializer</span><span class="op">(</span><span class="va">serializers</span><span class="op">.</span><span class="va">Serializer</span><span class="op">)</span><span class="op">:</span>
+    <span class="cm"># Frontend sends: { "lat": 27.7172, "lng": 85.3240, "cafe_type": "bakery" }</span>
+
+    <span class="va">lat</span>       <span class="op">=</span> <span class="va">serializers</span><span class="op">.</span><span class="fn">FloatField</span><span class="op">(</span>
+        <span class="va">min_value</span><span class="op">=</span><span class="nm">27.6</span><span class="op">,</span> <span class="va">max_value</span><span class="op">=</span><span class="nm">27.8</span><span class="op">,</span>  <span class="cm"># Kathmandu latitude range</span>
+        <span class="va">error_messages</span><span class="op">=</span><span class="op">{</span><span class="st">'min_value'</span><span class="op">:</span> <span class="st">'Location must be within Kathmandu.'</span><span class="op">}</span>
+    <span class="op">)</span>
+    <span class="va">lng</span>       <span class="op">=</span> <span class="va">serializers</span><span class="op">.</span><span class="fn">FloatField</span><span class="op">(</span>
+        <span class="va">min_value</span><span class="op">=</span><span class="nm">85.2</span><span class="op">,</span> <span class="va">max_value</span><span class="op">=</span><span class="nm">85.5</span><span class="op">,</span>  <span class="cm"># Kathmandu longitude range</span>
+    <span class="op">)</span>
+    <span class="va">cafe_type</span> <span class="op">=</span> <span class="va">serializers</span><span class="op">.</span><span class="fn">ChoiceField</span><span class="op">(</span>
+        <span class="va">choices</span><span class="op">=</span><span class="op">[</span><span class="st">'coffee_shop'</span><span class="op">,</span> <span class="st">'bakery'</span><span class="op">,</span> <span class="st">'dessert_shop'</span><span class="op">,</span> <span class="st">'restaurant'</span><span class="op">]</span>
+    <span class="op">)</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# UserProfileSerializer
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">UserProfileSerializer</span><span class="op">(</span><span class="va">serializers</span><span class="op">.</span><span class="va">ModelSerializer</span><span class="op">)</span><span class="op">:</span>
+    <span class="kw">class</span> <span class="cl">Meta</span><span class="op">:</span>
+        <span class="va">model</span>  <span class="op">=</span> <span class="va">UserProfile</span>
+        <span class="va">fields</span> <span class="op">=</span> <span class="op">[</span><span class="st">'id'</span><span class="op">,</span> <span class="st">'email'</span><span class="op">,</span> <span class="st">'name'</span><span class="op">,</span> <span class="st">'picture_url'</span><span class="op">,</span> <span class="st">'joined_at'</span><span class="op">]</span>
+        <span class="va">read_only_fields</span> <span class="op">=</span> <span class="op">[</span><span class="st">'joined_at'</span><span class="op">]</span>  <span class="cm"># can't be set by the client</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ VIEWS ══════════════════ -->
+<section class="sec" id="views">
+  <div class="sec-eye">API App · Business Logic</div>
+  <div class="sec-title">api/views.py — The API Endpoint Logic</div>
+  <div class="sec-desc">Views are functions (or classes) that run when a URL is matched. Each view receives the HTTP request, does the work (query database, calculate score, etc.), and returns a JSON response. This is the most important file in your project.</div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/api/views.py</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">from</span> <span class="va">django.conf</span> <span class="kw">import</span> <span class="va">settings</span>
+<span class="kw">from</span> <span class="va">django.contrib.gis.geos</span> <span class="kw">import</span> <span class="va">Point</span>
+<span class="kw">from</span> <span class="va">django.contrib.gis.db.models.functions</span> <span class="kw">import</span> <span class="va">Distance</span>
+<span class="kw">from</span> <span class="va">django.contrib.gis.measure</span> <span class="kw">import</span> <span class="va">D</span>  <span class="cm"># Distance unit helper</span>
+
+<span class="kw">from</span> <span class="va">rest_framework</span> <span class="kw">import</span> <span class="va">status</span>
+<span class="kw">from</span> <span class="va">rest_framework.views</span> <span class="kw">import</span> <span class="va">APIView</span>
+<span class="kw">from</span> <span class="va">rest_framework.response</span> <span class="kw">import</span> <span class="va">Response</span>
+
+<span class="kw">from</span> <span class="va">google.oauth2</span> <span class="kw">import</span> <span class="va">id_token</span>
+<span class="kw">from</span> <span class="va">google.auth.transport</span> <span class="kw">import</span> <span class="va">requests</span> <span class="kw">as</span> <span class="va">google_requests</span>
+<span class="kw">import</span> <span class="va">jwt</span><span class="op">,</span> <span class="va">math</span><span class="op">,</span> <span class="va">logging</span>
+
+<span class="kw">from</span> <span class="va">.models</span> <span class="kw">import</span> <span class="va">Cafe</span><span class="op">,</span> <span class="va">Ward</span><span class="op">,</span> <span class="va">Road</span><span class="op">,</span> <span class="va">UserProfile</span>
+<span class="kw">from</span> <span class="va">.serializers</span> <span class="kw">import</span> <span class="va">CafeSerializer</span><span class="op">,</span> <span class="va">SuitabilityRequestSerializer</span><span class="op">,</span> <span class="va">UserProfileSerializer</span>
+<span class="kw">from</span> <span class="va">ml_engine.predictor</span> <span class="kw">import</span> <span class="fn">get_prediction</span>
+
+<span class="va">logger</span> <span class="op">=</span> <span class="fn">logging</span><span class="op">.</span><span class="fn">getLogger</span><span class="op">(</span><span class="va">__name__</span><span class="op">)</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# VIEW 1: Google OAuth Login
+# POST /api/auth/google/
+# Frontend sends Google's ID token → we validate it → return our JWT
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">GoogleLoginView</span><span class="op">(</span><span class="va">APIView</span><span class="op">)</span><span class="op">:</span>
+    <span class="va">authentication_classes</span> <span class="op">=</span> <span class="op">[]</span>  <span class="cm"># no auth required to log in</span>
+    <span class="va">permission_classes</span> <span class="op">=</span> <span class="op">[]</span>     <span class="cm"># open to anyone</span>
+
+    <span class="kw">def</span> <span class="fn">post</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">request</span><span class="op">)</span><span class="op">:</span>
+        <span class="va">token</span> <span class="op">=</span> <span class="va">request</span><span class="op">.</span><span class="va">data</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'token'</span><span class="op">)</span>
+        <span class="kw">if</span> <span class="kw">not</span> <span class="va">token</span><span class="op">:</span>
+            <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span><span class="op">{</span><span class="st">'error'</span><span class="op">:</span> <span class="st">'Token required'</span><span class="op">}</span><span class="op">,</span> <span class="va">status</span><span class="op">=</span><span class="nm">400</span><span class="op">)</span>
+
+        <span class="kw">try</span><span class="op">:</span>
+            <span class="cm"># Verify with Google — confirms the token is legitimate</span>
+            <span class="va">idinfo</span> <span class="op">=</span> <span class="va">id_token</span><span class="op">.</span><span class="fn">verify_oauth2_token</span><span class="op">(</span>
+                <span class="va">token</span><span class="op">,</span>
+                <span class="va">google_requests</span><span class="op">.</span><span class="fn">Request</span><span class="op">(),</span>
+                <span class="va">settings</span><span class="op">.</span><span class="va">GOOGLE_CLIENT_ID</span>
+            <span class="op">)</span>
+
+            <span class="cm"># Get or create user in our database</span>
+            <span class="va">user</span><span class="op">,</span> <span class="va">created</span> <span class="op">=</span> <span class="va">UserProfile</span><span class="op">.</span><span class="va">objects</span><span class="op">.</span><span class="fn">get_or_create</span><span class="op">(</span>
+                <span class="va">google_id</span><span class="op">=</span><span class="va">idinfo</span><span class="op">[</span><span class="st">'sub'</span><span class="op">]</span><span class="op">,</span>
+                <span class="va">defaults</span><span class="op">=</span><span class="op">{</span>
+                    <span class="st">'email'</span><span class="op">:</span>       <span class="va">idinfo</span><span class="op">[</span><span class="st">'email'</span><span class="op">]</span><span class="op">,</span>
+                    <span class="st">'name'</span><span class="op">:</span>        <span class="va">idinfo</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'name'</span><span class="op">,</span> <span class="st">''</span><span class="op">)</span><span class="op">,</span>
+                    <span class="st">'picture_url'</span><span class="op">:</span> <span class="va">idinfo</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'picture'</span><span class="op">,</span> <span class="st">''</span><span class="op">)</span><span class="op">,</span>
+                <span class="op">}</span>
+            <span class="op">)</span>
+
+            <span class="cm"># Create our own JWT so frontend doesn't need Google's token again</span>
+            <span class="va">our_token</span> <span class="op">=</span> <span class="va">jwt</span><span class="op">.</span><span class="fn">encode</span><span class="op">(</span>
+                <span class="op">{</span><span class="st">'user_id'</span><span class="op">:</span> <span class="va">user</span><span class="op">.</span><span class="va">id</span><span class="op">,</span> <span class="st">'email'</span><span class="op">:</span> <span class="va">user</span><span class="op">.</span><span class="va">email</span><span class="op">}</span><span class="op">,</span>
+                <span class="va">settings</span><span class="op">.</span><span class="va">SECRET_KEY</span><span class="op">,</span>
+                <span class="va">algorithm</span><span class="op">=</span><span class="st">'HS256'</span>
+            <span class="op">)</span>
+            <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span><span class="op">{</span>
+                <span class="st">'token'</span><span class="op">:</span> <span class="va">our_token</span><span class="op">,</span>
+                <span class="st">'user'</span><span class="op">:</span>  <span class="cl">UserProfileSerializer</span><span class="op">(</span><span class="va">user</span><span class="op">).</span><span class="va">data</span>
+            <span class="op">})</span>
+
+        <span class="kw">except</span> <span class="va">ValueError</span> <span class="kw">as</span> <span class="va">e</span><span class="op">:</span>
+            <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span><span class="op">{</span><span class="st">'error'</span><span class="op">:</span> <span class="st">'Invalid Google token'</span><span class="op">}</span><span class="op">,</span> <span class="va">status</span><span class="op">=</span><span class="nm">401</span><span class="op">)</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# VIEW 2: Nearby Cafés
+# GET /api/cafes/nearby/?lat=27.71&lng=85.32&radius=500
+# Returns all cafés within 'radius' meters of the given point
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">NearbyCafesView</span><span class="op">(</span><span class="va">APIView</span><span class="op">)</span><span class="op">:</span>
+
+    <span class="kw">def</span> <span class="fn">get</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">request</span><span class="op">)</span><span class="op">:</span>
+        <span class="kw">try</span><span class="op">:</span>
+            <span class="va">lat</span>    <span class="op">=</span> <span class="fn">float</span><span class="op">(</span><span class="va">request</span><span class="op">.</span><span class="va">GET</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'lat'</span><span class="op">))</span>
+            <span class="va">lng</span>    <span class="op">=</span> <span class="fn">float</span><span class="op">(</span><span class="va">request</span><span class="op">.</span><span class="va">GET</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'lng'</span><span class="op">))</span>
+            <span class="va">radius</span> <span class="op">=</span> <span class="fn">float</span><span class="op">(</span><span class="va">request</span><span class="op">.</span><span class="va">GET</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'radius'</span><span class="op">,</span> <span class="nm">500</span><span class="op">))</span>  <span class="cm"># default 500m</span>
+        <span class="kw">except</span> <span class="op">(</span><span class="va">TypeError</span><span class="op">,</span> <span class="va">ValueError</span><span class="op">)</span><span class="op">:</span>
+            <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span><span class="op">{</span><span class="st">'error'</span><span class="op">:</span> <span class="st">'lat and lng are required numbers'</span><span class="op">}</span><span class="op">,</span> <span class="va">status</span><span class="op">=</span><span class="nm">400</span><span class="op">)</span>
+
+        <span class="cm"># Create a PostGIS Point object from the user's click
+        # (lng, lat) order — PostGIS uses (x=longitude, y=latitude)</span>
+        <span class="va">user_point</span> <span class="op">=</span> <span class="fn">Point</span><span class="op">(</span><span class="va">lng</span><span class="op">,</span> <span class="va">lat</span><span class="op">,</span> <span class="va">srid</span><span class="op">=</span><span class="nm">4326</span><span class="op">)</span>
+
+        <span class="cm"># THE CORE SPATIAL QUERY
+        # D(m=radius) creates a Distance object in meters
+        # filter(location__distance_lte=...) → PostGIS ST_DWithin under the hood
+        # annotate(distance=...) adds a 'distance' field to each result</span>
+        <span class="va">cafes</span> <span class="op">=</span> <span class="op">(</span>
+            <span class="va">Cafe</span><span class="op">.</span><span class="va">objects</span>
+            <span class="op">.</span><span class="fn">filter</span><span class="op">(</span>
+                <span class="va">location__distance_lte</span><span class="op">=</span><span class="op">(</span><span class="va">user_point</span><span class="op">,</span> <span class="fn">D</span><span class="op">(</span><span class="va">m</span><span class="op">=</span><span class="va">radius</span><span class="op">))</span><span class="op">,</span>
+                <span class="va">is_open</span><span class="op">=</span><span class="nm">True</span>
+            <span class="op">)</span>
+            <span class="op">.</span><span class="fn">annotate</span><span class="op">(</span><span class="va">distance</span><span class="op">=</span><span class="fn">Distance</span><span class="op">(</span><span class="st">'location'</span><span class="op">,</span> <span class="va">user_point</span><span class="op">))</span>
+            <span class="op">.</span><span class="fn">order_by</span><span class="op">(</span><span class="st">'distance'</span><span class="op">)</span>   <span class="cm"># nearest first</span>
+        <span class="op">)</span>
+
+        <span class="va">serializer</span> <span class="op">=</span> <span class="cl">CafeSerializer</span><span class="op">(</span><span class="va">cafes</span><span class="op">,</span> <span class="va">many</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+        <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span><span class="op">{</span>
+            <span class="st">'count'</span><span class="op">:</span>  <span class="va">cafes</span><span class="op">.</span><span class="fn">count</span><span class="op">(),</span>
+            <span class="st">'cafes'</span><span class="op">:</span>  <span class="va">serializer</span><span class="op">.</span><span class="va">data</span><span class="op">,</span>
+            <span class="st">'center'</span><span class="op">:</span> <span class="op">{</span><span class="st">'lat'</span><span class="op">:</span> <span class="va">lat</span><span class="op">,</span> <span class="st">'lng'</span><span class="op">:</span> <span class="va">lng</span><span class="op">}</span>
+        <span class="op">})</span>
+
+
+<span class="cm"># ═══════════════════════════════════════════════════════════════════
+# VIEW 3: Full Suitability Analysis
+# POST /api/analyze/
+# The main endpoint — takes a pinned location + cafe type
+# and returns: nearby cafes, top 5, suitability score, prediction
+# ═══════════════════════════════════════════════════════════════════</span>
+<span class="kw">class</span> <span class="cl">SuitabilityAnalysisView</span><span class="op">(</span><span class="va">APIView</span><span class="op">)</span><span class="op">:</span>
+
+    <span class="kw">def</span> <span class="fn">post</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">request</span><span class="op">)</span><span class="op">:</span>
+        <span class="cm"># Step 1: Validate incoming data</span>
+        <span class="va">serializer</span> <span class="op">=</span> <span class="cl">SuitabilityRequestSerializer</span><span class="op">(</span><span class="va">data</span><span class="op">=</span><span class="va">request</span><span class="op">.</span><span class="va">data</span><span class="op">)</span>
+        <span class="kw">if</span> <span class="kw">not</span> <span class="va">serializer</span><span class="op">.</span><span class="fn">is_valid</span><span class="op">()</span><span class="op">:</span>
+            <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span><span class="va">serializer</span><span class="op">.</span><span class="va">errors</span><span class="op">,</span> <span class="va">status</span><span class="op">=</span><span class="nm">400</span><span class="op">)</span>
+
+        <span class="va">lat</span>       <span class="op">=</span> <span class="va">serializer</span><span class="op">.</span><span class="va">validated_data</span><span class="op">[</span><span class="st">'lat'</span><span class="op">]</span>
+        <span class="va">lng</span>       <span class="op">=</span> <span class="va">serializer</span><span class="op">.</span><span class="va">validated_data</span><span class="op">[</span><span class="st">'lng'</span><span class="op">]</span>
+        <span class="va">cafe_type</span> <span class="op">=</span> <span class="va">serializer</span><span class="op">.</span><span class="va">validated_data</span><span class="op">[</span><span class="st">'cafe_type'</span><span class="op">]</span>
+
+        <span class="cm"># Step 2: Build the search point</span>
+        <span class="va">point</span> <span class="op">=</span> <span class="fn">Point</span><span class="op">(</span><span class="va">lng</span><span class="op">,</span> <span class="va">lat</span><span class="op">,</span> <span class="va">srid</span><span class="op">=</span><span class="nm">4326</span><span class="op">)</span>
+
+        <span class="cm"># Step 3: Get all cafes within 500m</span>
+        <span class="va">nearby</span> <span class="op">=</span> <span class="op">(</span>
+            <span class="va">Cafe</span><span class="op">.</span><span class="va">objects</span>
+            <span class="op">.</span><span class="fn">filter</span><span class="op">(</span><span class="va">location__distance_lte</span><span class="op">=</span><span class="op">(</span><span class="va">point</span><span class="op">,</span> <span class="fn">D</span><span class="op">(</span><span class="va">m</span><span class="op">=</span><span class="nm">500</span><span class="op">))</span><span class="op">,</span> <span class="va">is_open</span><span class="op">=</span><span class="nm">True</span><span class="op">)</span>
+            <span class="op">.</span><span class="fn">annotate</span><span class="op">(</span><span class="va">distance</span><span class="op">=</span><span class="fn">Distance</span><span class="op">(</span><span class="st">'location'</span><span class="op">,</span> <span class="va">point</span><span class="op">))</span>
+        <span class="op">)</span>
+        <span class="va">total_competitors</span> <span class="op">=</span> <span class="va">nearby</span><span class="op">.</span><span class="fn">count</span><span class="op">()</span>
+
+        <span class="cm"># Step 4: Get Top 5 cafés ranked by our score formula</span>
+        <span class="va">top5_qs</span> <span class="op">=</span> <span class="fn">sorted</span><span class="op">(</span>
+            <span class="va">nearby</span><span class="op">,</span>
+            <span class="va">key</span><span class="op">=</span><span class="kw">lambda</span> <span class="va">c</span><span class="op">:</span> <span class="op">(</span><span class="va">c</span><span class="op">.</span><span class="va">rating</span> <span class="kw">or</span> <span class="nm">0</span><span class="op">)</span> <span class="op">*</span> <span class="va">math</span><span class="op">.</span><span class="fn">log</span><span class="op">(</span><span class="va">c</span><span class="op">.</span><span class="va">review_count</span> <span class="op">+</span> <span class="nm">1</span><span class="op">)</span><span class="op">,</span>
+            <span class="va">reverse</span><span class="op">=</span><span class="nm">True</span>
+        <span class="op">)[:</span><span class="nm">5</span><span class="op">]</span>
+
+        <span class="cm"># Step 5: Get population density from the ward containing this point</span>
+        <span class="va">ward</span> <span class="op">=</span> <span class="va">Ward</span><span class="op">.</span><span class="va">objects</span><span class="op">.</span><span class="fn">filter</span><span class="op">(</span><span class="va">boundary__contains</span><span class="op">=</span><span class="va">point</span><span class="op">).</span><span class="fn">first</span><span class="op">()</span>
+        <span class="va">pop_density</span> <span class="op">=</span> <span class="va">ward</span><span class="op">.</span><span class="va">population_density</span> <span class="kw">if</span> <span class="va">ward</span> <span class="kw">else</span> <span class="nm">5000</span>  <span class="cm"># fallback</span>
+
+        <span class="cm"># Step 6: Compute road length within 500m
+        # Sum the length of all road segments that intersect our buffer</span>
+        <span class="kw">from</span> <span class="va">django.contrib.gis.geos</span> <span class="kw">import</span> <span class="va">GEOSGeometry</span>
+        <span class="kw">from</span> <span class="va">django.db.models</span> <span class="kw">import</span> <span class="va">Sum</span>
+        <span class="kw">from</span> <span class="va">django.contrib.gis.db.models.functions</span> <span class="kw">import</span> <span class="va">Length</span>
+        <span class="va">road_length</span> <span class="op">=</span> <span class="op">(</span>
+            <span class="va">Road</span><span class="op">.</span><span class="va">objects</span>
+            <span class="op">.</span><span class="fn">filter</span><span class="op">(</span><span class="va">geometry__distance_lte</span><span class="op">=</span><span class="op">(</span><span class="va">point</span><span class="op">,</span> <span class="fn">D</span><span class="op">(</span><span class="va">m</span><span class="op">=</span><span class="nm">500</span><span class="op">))</span><span class="op">)</span>
+            <span class="op">.</span><span class="fn">aggregate</span><span class="op">(</span><span class="va">total</span><span class="op">=</span><span class="fn">Sum</span><span class="op">(</span><span class="fn">Length</span><span class="op">(</span><span class="st">'geometry'</span><span class="op">)</span><span class="op">))</span>
+            <span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'total'</span><span class="op">)</span> <span class="kw">or</span> <span class="nm">0</span>
+        <span class="op">)</span>
+        <span class="va">road_m</span> <span class="op">=</span> <span class="fn">float</span><span class="op">(</span><span class="va">road_length</span><span class="op">)</span> <span class="op">*</span> <span class="nm">111139</span>  <span class="cm"># degrees → meters approx</span>
+
+        <span class="cm"># Step 7: Calculate suitability score (0–100)
+        # w1=competition penalty, w2=road access bonus, w3=population bonus</span>
+        <span class="va">competitor_score</span> <span class="op">=</span> <span class="fn">max</span><span class="op">(</span><span class="nm">0</span><span class="op">,</span> <span class="nm">1</span> <span class="op">-</span> <span class="op">(</span><span class="va">total_competitors</span> <span class="op">/</span> <span class="nm">20</span><span class="op">))</span> <span class="op">*</span> <span class="nm">40</span>
+        <span class="va">road_score</span>        <span class="op">=</span> <span class="fn">min</span><span class="op">(</span><span class="nm">1</span><span class="op">,</span> <span class="va">road_m</span> <span class="op">/</span> <span class="nm">3000</span><span class="op">)</span> <span class="op">*</span> <span class="nm">30</span>
+        <span class="va">pop_score</span>         <span class="op">=</span> <span class="fn">min</span><span class="op">(</span><span class="nm">1</span><span class="op">,</span> <span class="va">pop_density</span> <span class="op">/</span> <span class="nm">15000</span><span class="op">)</span> <span class="op">*</span> <span class="nm">30</span>
+        <span class="va">suitability_score</span> <span class="op">=</span> <span class="fn">round</span><span class="op">(</span><span class="va">competitor_score</span> <span class="op">+</span> <span class="va">road_score</span> <span class="op">+</span> <span class="va">pop_score</span><span class="op">)</span>
+
+        <span class="cm"># Step 8: Get ML prediction
+        # Build the feature vector the model expects</span>
+        <span class="va">features</span> <span class="op">=</span> <span class="op">[</span>
+            <span class="va">total_competitors</span><span class="op">,</span>
+            <span class="va">nearby</span><span class="op">.</span><span class="fn">aggregate</span><span class="op">(</span><span class="va">avg</span><span class="op">=</span><span class="va">__import__</span><span class="op">(</span><span class="st">'django.db.models'</span><span class="op">,</span> <span class="va">fromlist</span><span class="op">=</span><span class="op">[</span><span class="st">'Avg'</span><span class="op">]</span><span class="op">).</span><span class="va">Avg</span><span class="op">(</span><span class="st">'rating'</span><span class="op">))[</span><span class="st">'avg'</span><span class="op">]</span> <span class="kw">or</span> <span class="nm">0</span><span class="op">,</span>
+            <span class="va">road_m</span><span class="op">,</span>
+            <span class="va">pop_density</span><span class="op">,</span>
+        <span class="op">]</span>
+        <span class="va">prediction</span> <span class="op">=</span> <span class="fn">get_prediction</span><span class="op">(</span><span class="va">features</span><span class="op">)</span>  <span class="cm"># from ml_engine/predictor.py</span>
+
+        <span class="cm"># Step 9: Build and return the full response</span>
+        <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span><span class="op">{</span>
+            <span class="st">'location'</span><span class="op">:</span>  <span class="op">{</span><span class="st">'lat'</span><span class="op">:</span> <span class="va">lat</span><span class="op">,</span> <span class="st">'lng'</span><span class="op">:</span> <span class="va">lng</span><span class="op">}</span><span class="op">,</span>
+            <span class="st">'nearby_count'</span><span class="op">:</span> <span class="va">total_competitors</span><span class="op">,</span>
+            <span class="st">'top5'</span><span class="op">:</span>       <span class="cl">CafeSerializer</span><span class="op">(</span><span class="va">top5_qs</span><span class="op">,</span> <span class="va">many</span><span class="op">=</span><span class="nm">True</span><span class="op">).</span><span class="va">data</span><span class="op">,</span>
+            <span class="st">'suitability'</span><span class="op">:</span> <span class="op">{</span>
+                <span class="st">'score'</span><span class="op">:</span>           <span class="va">suitability_score</span><span class="op">,</span>
+                <span class="st">'competitor_count'</span><span class="op">:</span> <span class="va">total_competitors</span><span class="op">,</span>
+                <span class="st">'road_length_m'</span><span class="op">:</span>   <span class="fn">round</span><span class="op">(</span><span class="va">road_m</span><span class="op">)</span><span class="op">,</span>
+                <span class="st">'population_density'</span><span class="op">:</span> <span class="va">pop_density</span><span class="op">,</span>
+            <span class="op">}</span><span class="op">,</span>
+            <span class="st">'prediction'</span><span class="op">:</span> <span class="va">prediction</span><span class="op">,</span>  <span class="cm"># { type: "Bakery Café", confidence: 0.87 }</span>
+        <span class="op">})</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ API URLS ══════════════════ -->
+<section class="sec" id="api-urls">
+  <div class="sec-eye">API App · Routes</div>
+  <div class="sec-title">api/urls.py — API Route Definitions</div>
+  <div class="sec-desc">This file maps URL paths to the view classes you just wrote. Create this file yourself — Django doesn't auto-generate it for apps.</div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/api/urls.py — CREATE THIS FILE</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">from</span> <span class="va">django.urls</span> <span class="kw">import</span> <span class="va">path</span>
+<span class="kw">from</span> <span class="va">.</span> <span class="kw">import</span> <span class="va">views</span>
+
+<span class="va">urlpatterns</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="cm"># POST /api/auth/google/
+    # Frontend sends Google's ID token → we validate → return our JWT</span>
+    <span class="fn">path</span><span class="op">(</span><span class="st">'auth/google/'</span><span class="op">,</span>  <span class="va">views</span><span class="op">.</span><span class="va">GoogleLoginView</span><span class="op">.</span><span class="fn">as_view</span><span class="op">(),</span>  <span class="va">name</span><span class="op">=</span><span class="st">'google-login'</span><span class="op">)</span><span class="op">,</span>
+
+    <span class="cm"># GET /api/cafes/nearby/?lat=27.71&lng=85.32&radius=500
+    # Returns list of all cafes within radius meters of point</span>
+    <span class="fn">path</span><span class="op">(</span><span class="st">'cafes/nearby/'</span><span class="op">,</span> <span class="va">views</span><span class="op">.</span><span class="va">NearbyCafesView</span><span class="op">.</span><span class="fn">as_view</span><span class="op">(),</span> <span class="va">name</span><span class="op">=</span><span class="st">'cafes-nearby'</span><span class="op">)</span><span class="op">,</span>
+
+    <span class="cm"># POST /api/analyze/
+    # Main analysis: nearby + top5 + suitability score + ML prediction</span>
+    <span class="fn">path</span><span class="op">(</span><span class="st">'analyze/'</span><span class="op">,</span>      <span class="va">views</span><span class="op">.</span><span class="va">SuitabilityAnalysisView</span><span class="op">.</span><span class="fn">as_view</span><span class="op">(),</span> <span class="va">name</span><span class="op">=</span><span class="st">'analyze'</span><span class="op">)</span><span class="op">,</span>
+<span class="op">]</span>
+
+<span class="cm"># Final URL structure:
+#   /api/auth/google/    ← from cafelocate/urls.py prefix "api/" + "auth/google/"
+#   /api/cafes/nearby/   ← from cafelocate/urls.py prefix "api/" + "cafes/nearby/"
+#   /api/analyze/        ← from cafelocate/urls.py prefix "api/" + "analyze/"
+#   /api/predict/        ← handled by ml_engine/urls.py</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ ADMIN ══════════════════ -->
+<section class="sec" id="admin">
+  <div class="sec-eye">API App · Admin Panel</div>
+  <div class="sec-title">api/admin.py — Register Models for Admin Panel</div>
+  <div class="sec-desc">Django comes with a free admin dashboard at <code>/admin/</code>. Registering your models here lets you view, add, edit, and delete café records directly in the browser — very useful for testing.</div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/api/admin.py</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">from</span> <span class="va">django.contrib.gis</span> <span class="kw">import</span> <span class="va">admin</span>  <span class="cm"># GIS admin (not regular admin)</span>
+<span class="kw">from</span> <span class="va">.models</span> <span class="kw">import</span> <span class="va">Cafe</span><span class="op">,</span> <span class="va">Ward</span><span class="op">,</span> <span class="va">Road</span><span class="op">,</span> <span class="va">UserProfile</span>
+
+
+<span class="cm"># Register Cafe with a customized display</span>
+<span class="op">@</span><span class="va">admin</span><span class="op">.</span><span class="fn">register</span><span class="op">(</span><span class="va">Cafe</span><span class="op">)</span>
+<span class="kw">class</span> <span class="cl">CafeAdmin</span><span class="op">(</span><span class="va">admin</span><span class="op">.</span><span class="va">GeoModelAdmin</span><span class="op">)</span><span class="op">:</span>  <span class="cm"># GeoModelAdmin shows map widget</span>
+    <span class="cm"># Columns shown in the list view</span>
+    <span class="va">list_display</span>  <span class="op">=</span> <span class="op">[</span><span class="st">'name'</span><span class="op">,</span> <span class="st">'cafe_type'</span><span class="op">,</span> <span class="st">'rating'</span><span class="op">,</span> <span class="st">'review_count'</span><span class="op">,</span> <span class="st">'is_open'</span><span class="op">]</span>
+    <span class="cm"># Filter sidebar options</span>
+    <span class="va">list_filter</span>   <span class="op">=</span> <span class="op">[</span><span class="st">'cafe_type'</span><span class="op">,</span> <span class="st">'is_open'</span><span class="op">]</span>
+    <span class="cm"># Search box — searches these fields</span>
+    <span class="va">search_fields</span> <span class="op">=</span> <span class="op">[</span><span class="st">'name'</span><span class="op">,</span> <span class="st">'place_id'</span><span class="op">]</span>
+    <span class="cm"># How many per page</span>
+    <span class="va">list_per_page</span> <span class="op">=</span> <span class="nm">50</span>
+
+
+<span class="op">@</span><span class="va">admin</span><span class="op">.</span><span class="fn">register</span><span class="op">(</span><span class="va">Ward</span><span class="op">)</span>
+<span class="kw">class</span> <span class="cl">WardAdmin</span><span class="op">(</span><span class="va">admin</span><span class="op">.</span><span class="va">GeoModelAdmin</span><span class="op">)</span><span class="op">:</span>
+    <span class="va">list_display</span>  <span class="op">=</span> <span class="op">[</span><span class="st">'ward_number'</span><span class="op">,</span> <span class="st">'population'</span><span class="op">,</span> <span class="st">'area_sqkm'</span><span class="op">,</span> <span class="st">'population_density'</span><span class="op">]</span>
+    <span class="va">ordering</span>      <span class="op">=</span> <span class="op">[</span><span class="st">'ward_number'</span><span class="op">]</span>
+
+
+<span class="op">@</span><span class="va">admin</span><span class="op">.</span><span class="fn">register</span><span class="op">(</span><span class="va">UserProfile</span><span class="op">)</span>
+<span class="kw">class</span> <span class="cl">UserProfileAdmin</span><span class="op">(</span><span class="va">admin</span><span class="op">.</span><span class="va">ModelAdmin</span><span class="op">)</span><span class="op">:</span>
+    <span class="va">list_display</span>  <span class="op">=</span> <span class="op">[</span><span class="st">'name'</span><span class="op">,</span> <span class="st">'email'</span><span class="op">,</span> <span class="st">'joined_at'</span><span class="op">]</span>
+    <span class="va">search_fields</span> <span class="op">=</span> <span class="op">[</span><span class="st">'name'</span><span class="op">,</span> <span class="st">'email'</span><span class="op">]</span>
+    <span class="va">readonly_fields</span> <span class="op">=</span> <span class="op">[</span><span class="st">'google_id'</span><span class="op">,</span> <span class="st">'joined_at'</span><span class="op">]</span>
+
+<span class="cm"># Road is not registered — too many records to browse in admin</span></div>
+  </div>
+
+  <div class="box tip">
+    <span class="bicon">✅</span>
+    <div>To access the admin panel: run the server → go to <code>http://localhost:8000/admin/</code> → create a superuser with <code>python manage.py createsuperuser</code> → log in with those credentials.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ ML PREDICTOR ══════════════════ -->
+<section class="sec" id="predictor">
+  <div class="sec-eye">ML Engine App</div>
+  <div class="sec-title">ml_engine/predictor.py — Loads and Runs the ML Model</div>
+  <div class="sec-desc">This file loads the trained <code>rf_model.pkl</code> file once when the server starts, then exposes a <code>get_prediction()</code> function that any view can call. Loading once (not on every request) keeps it fast.</div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/ml_engine/predictor.py — CREATE THIS FILE</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">import</span> <span class="va">joblib</span>
+<span class="kw">import</span> <span class="va">numpy</span> <span class="kw">as</span> <span class="va">np</span>
+<span class="kw">import</span> <span class="va">logging</span>
+<span class="kw">from</span> <span class="va">pathlib</span> <span class="kw">import</span> <span class="va">Path</span>
+
+<span class="va">logger</span> <span class="op">=</span> <span class="fn">logging</span><span class="op">.</span><span class="fn">getLogger</span><span class="op">(</span><span class="va">__name__</span><span class="op">)</span>
+
+<span class="cm"># ── Path to the trained model files ──────────────────────────────────────────
+# These .pkl files are created by ml/train_model.py
+# They live in ml/models/ folder and are copied here after training</span>
+<span class="va">BASE_DIR</span>      <span class="op">=</span> <span class="fn">Path</span><span class="op">(</span><span class="va">__file__</span><span class="op">).</span><span class="fn">resolve</span><span class="op">().</span><span class="va">parent</span>
+<span class="va">MODEL_PATH</span>    <span class="op">=</span> <span class="va">BASE_DIR</span> <span class="op">/</span> <span class="st">'models'</span> <span class="op">/</span> <span class="st">'rf_model.pkl'</span>
+<span class="va">ENCODER_PATH</span>  <span class="op">=</span> <span class="va">BASE_DIR</span> <span class="op">/</span> <span class="st">'models'</span> <span class="op">/</span> <span class="st">'label_encoder.pkl'</span>
+
+<span class="cm"># ── Load model once at import time ────────────────────────────────────────────
+# Module-level variables = loaded ONCE when Django starts, not on each request.
+# This is critical for performance — loading a model takes ~1 second.</span>
+<span class="va">_model</span>   <span class="op">=</span> <span class="nm">None</span>
+<span class="va">_encoder</span> <span class="op">=</span> <span class="nm">None</span>
+
+<span class="kw">def</span> <span class="fn">_load_model</span><span class="op">()</span><span class="op">:</span>
+    <span class="cm">"""Load model from disk if not already loaded (lazy loading)."""</span>
+    <span class="kw">global</span> <span class="va">_model</span><span class="op">,</span> <span class="va">_encoder</span>
+    <span class="kw">if</span> <span class="va">_model</span> <span class="kw">is</span> <span class="nm">None</span><span class="op">:</span>
+        <span class="kw">try</span><span class="op">:</span>
+            <span class="va">_model</span>   <span class="op">=</span> <span class="va">joblib</span><span class="op">.</span><span class="fn">load</span><span class="op">(</span><span class="va">MODEL_PATH</span><span class="op">)</span>
+            <span class="va">_encoder</span> <span class="op">=</span> <span class="va">joblib</span><span class="op">.</span><span class="fn">load</span><span class="op">(</span><span class="va">ENCODER_PATH</span><span class="op">)</span>
+            <span class="va">logger</span><span class="op">.</span><span class="fn">info</span><span class="op">(</span><span class="st">"ML model loaded successfully."</span><span class="op">)</span>
+        <span class="kw">except</span> <span class="va">FileNotFoundError</span><span class="op">:</span>
+            <span class="va">logger</span><span class="op">.</span><span class="fn">warning</span><span class="op">(</span><span class="st">"rf_model.pkl not found. Run ml/train_model.py first."</span><span class="op">)</span>
+
+
+<span class="cm"># ── Feature names — must match what the model was trained on ──────────────────</span>
+<span class="va">FEATURE_NAMES</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="st">'competitor_count'</span><span class="op">,</span>     <span class="cm"># number of cafes within 500m</span>
+    <span class="st">'avg_competitor_rating'</span><span class="op">,</span> <span class="cm"># average rating of those cafes</span>
+    <span class="st">'road_length_m'</span><span class="op">,</span>         <span class="cm"># total road length in buffer (meters)</span>
+    <span class="st">'population_density'</span><span class="op">,</span>    <span class="cm"># people per sq km in the ward</span>
+<span class="op">]</span>
+
+<span class="cm"># ── Human-readable labels ─────────────────────────────────────────────────────</span>
+<span class="va">CAFE_TYPE_LABELS</span> <span class="op">=</span> <span class="op">{</span>
+    <span class="st">'coffee_shop'</span><span class="op">:</span>   <span class="st">'Coffee Shop'</span><span class="op">,</span>
+    <span class="st">'bakery'</span><span class="op">:</span>        <span class="st">'Bakery Café'</span><span class="op">,</span>
+    <span class="st">'dessert_shop'</span><span class="op">:</span>  <span class="st">'Dessert Shop'</span><span class="op">,</span>
+    <span class="st">'restaurant'</span><span class="op">:</span>    <span class="st">'Restaurant Café'</span><span class="op">,</span>
+<span class="op">}</span>
+
+
+<span class="kw">def</span> <span class="fn">get_prediction</span><span class="op">(</span><span class="va">features</span><span class="op">:</span> <span class="fn">list</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="fn">dict</span><span class="op">:</span>
+    <span class="cm">"""
+    Run prediction from the trained Random Forest model.
+
+    Args:
+        features: [competitor_count, avg_rating, road_length_m, pop_density]
+
+    Returns:
+        { 'predicted_type': 'Bakery Café', 'confidence': 0.87,
+          'all_probabilities': {'Coffee Shop': 0.08, 'Bakery Café': 0.87, ...} }
+    """</span>
+    <span class="fn">_load_model</span><span class="op">()</span>
+
+    <span class="kw">if</span> <span class="va">_model</span> <span class="kw">is</span> <span class="nm">None</span><span class="op">:</span>
+        <span class="cm"># Model not trained yet — return a safe fallback</span>
+        <span class="kw">return</span> <span class="op">{</span>
+            <span class="st">'predicted_type'</span><span class="op">:</span>    <span class="st">'Model not trained yet'</span><span class="op">,</span>
+            <span class="st">'confidence'</span><span class="op">:</span>        <span class="nm">0</span><span class="op">,</span>
+            <span class="st">'all_probabilities'</span><span class="op">:</span> <span class="op">{}</span><span class="op">,</span>
+        <span class="op">}</span>
+
+    <span class="cm"># Convert feature list to 2D array (sklearn expects shape: [n_samples, n_features])</span>
+    <span class="va">X</span> <span class="op">=</span> <span class="va">np</span><span class="op">.</span><span class="fn">array</span><span class="op">(</span><span class="op">[</span><span class="va">features</span><span class="op">]</span><span class="op">)</span>    <span class="cm"># shape: (1, 4)</span>
+
+    <span class="cm"># Get predicted class (integer) and convert to label string</span>
+    <span class="va">predicted_int</span>   <span class="op">=</span> <span class="va">_model</span><span class="op">.</span><span class="fn">predict</span><span class="op">(</span><span class="va">X</span><span class="op">)[</span><span class="nm">0</span><span class="op">]</span>
+    <span class="va">predicted_label</span> <span class="op">=</span> <span class="va">_encoder</span><span class="op">.</span><span class="fn">inverse_transform</span><span class="op">([</span><span class="va">predicted_int</span><span class="op">])[</span><span class="nm">0</span><span class="op">]</span>
+
+    <span class="cm"># Get probabilities for all classes
+    # predict_proba returns [[0.05, 0.87, 0.03, 0.05]] for 4 classes</span>
+    <span class="va">probabilities</span> <span class="op">=</span> <span class="va">_model</span><span class="op">.</span><span class="fn">predict_proba</span><span class="op">(</span><span class="va">X</span><span class="op">)[</span><span class="nm">0</span><span class="op">]</span>
+    <span class="va">class_labels</span>  <span class="op">=</span> <span class="va">_encoder</span><span class="op">.</span><span class="fn">inverse_transform</span><span class="op">(</span><span class="va">_model</span><span class="op">.</span><span class="va">classes_</span><span class="op">)</span>
+
+    <span class="va">all_probs</span> <span class="op">=</span> <span class="op">{</span>
+        <span class="va">CAFE_TYPE_LABELS</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="va">label</span><span class="op">,</span> <span class="va">label</span><span class="op">)</span><span class="op">:</span> <span class="fn">round</span><span class="op">(</span><span class="fn">float</span><span class="op">(</span><span class="va">prob</span><span class="op">)</span><span class="op">,</span> <span class="nm">3</span><span class="op">)</span>
+        <span class="kw">for</span> <span class="va">label</span><span class="op">,</span> <span class="va">prob</span> <span class="kw">in</span> <span class="fn">zip</span><span class="op">(</span><span class="va">class_labels</span><span class="op">,</span> <span class="va">probabilities</span><span class="op">)</span>
+    <span class="op">}</span>
+
+    <span class="kw">return</span> <span class="op">{</span>
+        <span class="st">'predicted_type'</span><span class="op">:</span>    <span class="va">CAFE_TYPE_LABELS</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="va">predicted_label</span><span class="op">,</span> <span class="va">predicted_label</span><span class="op">)</span><span class="op">,</span>
+        <span class="st">'confidence'</span><span class="op">:</span>        <span class="fn">round</span><span class="op">(</span><span class="fn">float</span><span class="op">(</span><span class="fn">max</span><span class="op">(</span><span class="va">probabilities</span><span class="op">))</span><span class="op">,</span> <span class="nm">3</span><span class="op">)</span><span class="op">,</span>
+        <span class="st">'all_probabilities'</span><span class="op">:</span>  <span class="va">all_probs</span><span class="op">,</span>
+    <span class="op">}</span>
+    <span class="cm"># Example output:
+    # { "predicted_type": "Bakery Café",
+    #   "confidence": 0.87,
+    #   "all_probabilities": {
+    #     "Coffee Shop": 0.05, "Bakery Café": 0.87,
+    #     "Dessert Shop": 0.03, "Restaurant Café": 0.05
+    #   }
+    # }</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ ML VIEWS ══════════════════ -->
+<section class="sec" id="ml-views">
+  <div class="sec-eye">ML Engine App · Endpoint</div>
+  <div class="sec-title">ml_engine/views.py + ml_engine/urls.py</div>
+  <div class="sec-desc">The ML engine app needs its own view and URL file to expose the <code>/api/predict/</code> endpoint independently.</div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/ml_engine/views.py</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">from</span> <span class="va">rest_framework.views</span> <span class="kw">import</span> <span class="va">APIView</span>
+<span class="kw">from</span> <span class="va">rest_framework.response</span> <span class="kw">import</span> <span class="va">Response</span>
+<span class="kw">from</span> <span class="va">.predictor</span> <span class="kw">import</span> <span class="fn">get_prediction</span>
+
+
+<span class="cm"># POST /api/predict/
+# Direct prediction endpoint — send features, get prediction back
+# Useful for testing the ML model independently of the full analysis</span>
+<span class="kw">class</span> <span class="cl">PredictView</span><span class="op">(</span><span class="va">APIView</span><span class="op">)</span><span class="op">:</span>
+
+    <span class="kw">def</span> <span class="fn">post</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">request</span><span class="op">)</span><span class="op">:</span>
+        <span class="cm"># Expect: { "features": [8, 4.2, 1200, 5000] }</span>
+        <span class="va">features</span> <span class="op">=</span> <span class="va">request</span><span class="op">.</span><span class="va">data</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">'features'</span><span class="op">)</span>
+
+        <span class="kw">if</span> <span class="kw">not</span> <span class="va">features</span> <span class="kw">or</span> <span class="fn">len</span><span class="op">(</span><span class="va">features</span><span class="op">)</span> <span class="op">!=</span> <span class="nm">4</span><span class="op">:</span>
+            <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span>
+                <span class="op">{</span><span class="st">'error'</span><span class="op">:</span> <span class="st">'Send features: [competitor_count, avg_rating, road_m, pop_density]'</span><span class="op">}</span><span class="op">,</span>
+                <span class="va">status</span><span class="op">=</span><span class="nm">400</span>
+            <span class="op">)</span>
+
+        <span class="va">result</span> <span class="op">=</span> <span class="fn">get_prediction</span><span class="op">(</span><span class="va">features</span><span class="op">)</span>
+        <span class="kw">return</span> <span class="fn">Response</span><span class="op">(</span><span class="va">result</span><span class="op">)</span></div>
+  </div>
+
+  <div class="cblock" style="margin-top:16px;">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">backend/ml_engine/urls.py — CREATE THIS FILE</span>
+        <span class="flabel fl-py">PYTHON</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="kw">from</span> <span class="va">django.urls</span> <span class="kw">import</span> <span class="va">path</span>
+<span class="kw">from</span> <span class="va">.</span> <span class="kw">import</span> <span class="va">views</span>
+
+<span class="va">urlpatterns</span> <span class="op">=</span> <span class="op">[</span>
+    <span class="cm"># POST /api/predict/
+    # Direct access to ML prediction without full analysis</span>
+    <span class="fn">path</span><span class="op">(</span><span class="st">'predict/'</span><span class="op">,</span> <span class="va">views</span><span class="op">.</span><span class="va">PredictView</span><span class="op">.</span><span class="fn">as_view</span><span class="op">(),</span> <span class="va">name</span><span class="op">=</span><span class="st">'predict'</span><span class="op">)</span><span class="op">,</span>
+<span class="op">]</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ MIGRATIONS ══════════════════ -->
+<section class="sec" id="migrations">
+  <div class="sec-eye">Final Steps</div>
+  <div class="sec-title">Running Migrations & Creating Admin User</div>
+  <div class="sec-desc">After writing all the files above, run these commands in order to create all your database tables and set up the admin panel.</div>
+
+  <div class="cblock">
+    <div class="chead">
+      <div class="chead-left">
+        <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+        <span class="fname">Terminal — backend/ folder, venv active</span>
+        <span class="flabel fl-cmd">TERMINAL</span>
+      </div>
+      <button class="cbtn" onclick="cp(this)">copy</button>
+    </div>
+    <div class="cbody"><span class="cm"># ── 1. Generate migration files from your models ────────────────────────────
+# Django reads api/models.py and writes SQL migration files
+# Output: api/migrations/0001_initial.py</span>
+<span class="gr">python manage.py makemigrations api</span>
+<span class="gr">python manage.py makemigrations ml_engine</span>
+
+<span class="cm"># ── 2. Apply migrations to the database ─────────────────────────────────────
+# Executes the SQL — creates tables: cafes, wards, roads, user_profiles</span>
+<span class="gr">python manage.py migrate</span>
+
+<span class="cm"># Expected output (partial):
+#   Applying api.0001_initial... OK
+#   Applying ml_engine.0001_initial... OK</span>
+
+<span class="cm"># ── 3. Create a superuser for the admin panel ────────────────────────────────
+# Fill in username, email, and password when prompted</span>
+<span class="gr">python manage.py createsuperuser</span>
+
+<span class="cm"># ── 4. Start the development server ─────────────────────────────────────────</span>
+<span class="gr">python manage.py runserver</span>
+
+<span class="cm"># ── 5. Test your endpoints in the browser ───────────────────────────────────
+# Admin panel:       http://localhost:8000/admin/
+# Nearby cafes API:  http://localhost:8000/api/cafes/nearby/?lat=27.7172&lng=85.3240
+# Analyze API:       POST to http://localhost:8000/api/analyze/</span></div>
+  </div>
+
+  <div class="box note">
+    <span class="bicon">💡</span>
+    <div><strong>makemigrations vs migrate:</strong><br>
+    <code>makemigrations</code> = writes a Python file describing what changed in your models (like a draft). It doesn't touch the database.<br>
+    <code>migrate</code> = reads those Python files and actually runs the SQL against PostgreSQL. Run both every time you edit models.py.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ VERIFY ══════════════════ -->
+<section class="sec" id="verify">
+  <div class="sec-eye">Checklist</div>
+  <div class="sec-title">Verify Everything is Working</div>
+  <div class="sec-desc">Tick each box as you confirm it works. All 12 must pass before moving to Phase 2 (data collection).</div>
+
+  <div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>django-admin startproject cafelocate .</code> ran without errors — <code>manage.py</code> exists</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>python manage.py startapp api</code> ran — <code>api/</code> folder with models.py, views.py exists</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>python manage.py startapp ml_engine</code> ran — <code>ml_engine/</code> folder exists</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>settings.py</code> updated: <code>'api'</code>, <code>'ml_engine'</code>, <code>'rest_framework'</code>, <code>'corsheaders'</code>, <code>'django.contrib.gis'</code> all in INSTALLED_APPS</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>settings.py</code> DATABASES uses <code>django.contrib.gis.db.backends.postgis</code> engine</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>settings.py</code> reads all values from <code>.env</code> — no hardcoded passwords in the file</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>api/urls.py</code> and <code>ml_engine/urls.py</code> created (Django doesn't auto-generate these for apps)</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>python manage.py makemigrations</code> — says "Created model Cafe, Ward, Road, UserProfile"</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>python manage.py migrate</code> — all migrations show "OK", no errors</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>python manage.py createsuperuser</code> — created a superuser account</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>python manage.py runserver</code> — server starts, no ImportError or ModuleNotFoundError</div></div>
+    <div class="cl-item"><div class="cl-chk" onclick="tick(this)"></div><div class="cl-lbl"><code>http://localhost:8000/admin/</code> — admin login page loads, can log in with superuser credentials</div></div>
+  </div>
+
+  <div class="box django" style="margin-top:24px;">
+    <span class="bicon">🎉</span>
+    <div><strong>Django setup is complete!</strong> Your backend server exists, all database tables are created, and the API endpoints are wired up. In Phase 2, you'll populate the <code>cafes</code> table by scraping Google Places API data. In Phase 3, you'll test the endpoints with real data using Postman.</div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+// Sidebar active tracking
+window.addEventListener('scroll', () => {
+  const fill = document.getElementById('progressFill');
+  const pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+  fill.style.width = pct + '%';
+
+  let current = '';
+  document.querySelectorAll('.sec').forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  document.querySelectorAll('.sb-link').forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+  });
+});
+
+// Step toggle
+function toggleStep(hd) {
+  hd.classList.toggle('open');
+  hd.nextElementSibling.classList.toggle('open');
+}
+
+// Copy code
+function cp(btn) {
+  const text = btn.closest('.cblock').querySelector('.cbody').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ copied'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+// Checklist tick
+function tick(el) {
+  el.classList.toggle('done');
+  el.textContent = el.classList.contains('done') ? '✓' : '';
+}
+</script>
+</body>
+</html>

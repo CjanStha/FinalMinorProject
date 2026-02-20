@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeLocate ML — Folder Structure</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Outfit:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --bg: #0a0c10;
+  --panel: #0f1318;
+  --surface: #161c24;
+  --surface2: #1e2732;
+  --border: #262f3d;
+  --text: #dde6f0;
+  --muted: #5a6a80;
+  --mono: 'Fira Code', monospace;
+  --sans: 'Outfit', sans-serif;
+
+  /* Layer colors */
+  --root:     #f0c060;
+  --backend:  #5b8af5;
+  --frontend: #f06090;
+  --ml:       #50d890;
+  --data:     #c07aff;
+  --git:      #ff8050;
+  --config:   #50c8d8;
+  --file:     #9baabb;
+  --special:  #ffb347;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(180deg, #0f1318 0%, transparent 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 40px 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  background: rgba(10,12,16,0.92);
+}
+
+.header-left h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.header-left h1 span { color: var(--root); }
+.header-left p { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+.header-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.ctrl-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+.ctrl-btn:hover { color: var(--text); border-color: var(--muted); }
+.ctrl-btn.active { color: var(--text); background: var(--surface2); border-color: var(--border); }
+
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  gap: 6px;
+  padding: 14px 40px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.legend-item:hover { border-color: var(--muted); color: var(--text); }
+.legend-item.hidden { opacity: 0.35; }
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── MAIN LAYOUT ── */
+.layout {
+  display: flex;
+  min-height: calc(100vh - 120px);
+}
+
+/* ── TREE PANEL ── */
+.tree-panel {
+  flex: 1;
+  padding: 32px 40px 80px;
+  overflow-x: auto;
+}
+
+/* ── DETAIL PANEL ── */
+.detail-panel {
+  width: 300px;
+  border-left: 1px solid var(--border);
+  background: var(--panel);
+  padding: 24px;
+  position: sticky;
+  top: 73px;
+  height: calc(100vh - 73px);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--muted);
+  text-align: center;
+  gap: 10px;
+}
+.detail-empty .icon { font-size: 36px; opacity: 0.4; }
+.detail-empty p { font-size: 12px; font-family: var(--mono); line-height: 1.6; }
+
+.detail-content { display: none; }
+.detail-content.visible { display: block; }
+
+.detail-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+.detail-path {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  word-break: break-all;
+  line-height: 1.6;
+}
+.detail-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+}
+.detail-section-title {
+  font-size: 10px;
+  font-family: var(--mono);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  margin-top: 20px;
+}
+.detail-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.detail-desc strong { color: var(--text); }
+
+.detail-phase {
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: 6px;
+  border-left: 3px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  line-height: 1.6;
+}
+
+/* ── TREE NODE ── */
+.tree-root {
+  list-style: none;
+  padding: 0;
+}
+
+.node-wrap {
+  position: relative;
+  list-style: none;
+}
+
+.node-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px 0;
+  position: relative;
+}
+
+.node-indent {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Vertical line segments */
+.v-line {
+  width: 20px;
+  height: 100%;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.node-connector {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 28px;
+  position: relative;
+}
+
+/* The actual clickable node element */
+.node-el {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border: 1px solid transparent;
+  user-select: none;
+  min-width: 0;
+}
+.node-el:hover { background: var(--surface); border-color: var(--border); }
+.node-el.selected { background: var(--surface2); border-color: var(--border); }
+
+.node-toggle {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.node-el:hover .node-toggle { border-color: var(--muted); }
+.node-toggle.open { background: var(--surface2); }
+
+.node-icon { font-size: 15px; flex-shrink: 0; line-height: 1; }
+
+.node-name {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.node-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.node-desc {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  font-family: var(--mono);
+  flex-shrink: 0;
+}
+
+/* Children list */
+.node-children {
+  padding-left: 0;
+  list-style: none;
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.2s;
+}
+.node-children.collapsed {
+  max-height: 0 !important;
+  opacity: 0;
+}
+
+/* Tree lines drawn with CSS */
+.tree-lines {
+  position: relative;
+}
+
+/* ── SVG CONNECTOR LINES ── */
+svg.connectors {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ── SEARCH ── */
+.search-wrap {
+  padding: 0 40px 0;
+  margin-bottom: 24px;
+}
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--muted); }
+.search-input::placeholder { color: var(--muted); }
+
+.node-wrap.search-hidden { display: none; }
+.node-name.highlight { color: var(--root); background: rgba(240,192,96,0.15); border-radius: 2px; padding: 0 2px; }
+
+@media (max-width: 700px) {
+  .detail-panel { display: none; }
+  .header { padding: 16px 20px; }
+  .tree-panel { padding: 20px 16px 60px; }
+  .legend { padding: 12px 20px; }
+  .search-wrap { padding: 0 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>☕ CafeLocate <span>ML</span> — Folder Structure</h1>
+    <p>Click any file or folder to see what it does · Click ▶ to expand/collapse</p>
+  </div>
+  <div class="header-controls">
+    <button class="ctrl-btn" onclick="expandAll()">Expand All</button>
+    <button class="ctrl-btn" onclick="collapseAll()">Collapse All</button>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item" data-layer="root" onclick="filterLayer(this)"><div class="legend-dot" style="background:var(--root)"></div>Root</div>
+  <div class="legend-item" data-layer="backend" onclick="filterLayer(this)"><div class="legend-dot" style="background:var(--backend)"></div>Backend</div>
+  <div class="legend-item" data-layer="frontend" onclick="filterLayer(this)"><div class="legend-dot" style="background:var(--frontend)"></div>Frontend</div>
+  <div class="legend-item" data-layer="ml" onclick="filterLayer(this)"><div class="legend-dot" style="background:var(--ml)"></div>ML / AI</div>
+  <div class="legend-item" data-layer="data" onclick="filterLayer(this)"><div class="legend-dot" style="background:var(--data)"></div>Data</div>
+  <div class="legend-item" data-layer="git" onclick="filterLayer(this)"><div class="legend-dot" style="background:var(--git)"></div>Git / Config</div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+  <div class="tree-panel">
+    <div class="search-wrap">
+      <input class="search-input" type="text" placeholder="🔍  search files and folders..." oninput="searchTree(this.value)" />
+    </div>
+    <ul class="tree-root" id="treeRoot"></ul>
+  </div>
+
+  <aside class="detail-panel" id="detailPanel">
+    <div class="detail-empty" id="detailEmpty">
+      <div class="icon">📂</div>
+      <p>Click any file or<br>folder to see details</p>
+    </div>
+    <div class="detail-content" id="detailContent"></div>
+  </aside>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// DATA — Full project tree
+// ══════════════════════════════════════════════════════
+const TREE = {
+  name: 'cafelocate/',
+  icon: '🗂️',
+  layer: 'root',
+  type: 'folder',
+  open: true,
+  phase: 'Phase 1 — Created manually (mkdir cafelocate)',
+  desc: 'The <strong>root folder</strong> of the entire project. Everything lives inside here. This is what you push to GitHub. Each subfolder is a different concern of the system.',
+  children: [
+    {
+      name: 'backend/',
+      icon: '⚙️',
+      layer: 'backend',
+      type: 'folder',
+      open: true,
+      phase: 'Phase 1 — Created by: django-admin startproject',
+      desc: 'The <strong>Django server</strong>. Contains all Python code — the REST API, database models, ML serving, and server configuration. This is the brain of the system. Run with <strong>python manage.py runserver</strong>.',
+      children: [
+        {
+          name: 'cafelocate/',
+          icon: '📦',
+          layer: 'backend',
+          type: 'folder',
+          open: true,
+          phase: 'Phase 1 — Auto-generated by Django',
+          desc: 'The <strong>Django project package</strong>. This inner folder (same name as the root) holds the project-wide settings, URL routing, and server entry points. It is NOT an app — it\'s the control center.',
+          children: [
+            { name: '__init__.py',  icon: '🔹', layer: 'backend', type: 'file', phase: 'Phase 1 — Auto-generated', desc: 'Empty file that tells Python "this folder is a package." <strong>Never edit this.</strong>' },
+            { name: 'settings.py', icon: '⚙️', layer: 'backend', type: 'file', phase: 'Phase 1 — Edit immediately', desc: '<strong>The most important config file.</strong> Controls: installed apps, database connection, secret key, allowed hosts, CORS settings, static files, and more. You edit this frequently throughout all phases.' },
+            { name: 'urls.py',     icon: '🛣️', layer: 'backend', type: 'file', phase: 'Phase 2+ — Edit when adding routes', desc: '<strong>The URL router.</strong> Maps URL paths to view functions. Example: <strong>/api/cafes/</strong> → calls <strong>api.views.NearbyView</strong>. Every new API endpoint gets registered here.' },
+            { name: 'wsgi.py',     icon: '🚀', layer: 'backend', type: 'file', phase: 'Phase 7 — Deployment only', desc: 'Web Server Gateway Interface entry point. Used by production servers (Gunicorn, uWSGI) to serve Django. <strong>Don\'t touch during development.</strong>' },
+            { name: 'asgi.py',     icon: '🔌', layer: 'backend', type: 'file', phase: 'Phase 7 — Optional', desc: 'Async server entry point. Not needed for this project unless you add WebSocket support later.' },
+          ]
+        },
+        {
+          name: 'api/',
+          icon: '📡',
+          layer: 'backend',
+          type: 'folder',
+          open: true,
+          phase: 'Phase 1 — Created by: python manage.py startapp api',
+          desc: '<strong>The API Django app.</strong> Handles all the REST endpoints that the frontend calls. When the map sends a request like "give me cafés near this point," this app handles it.',
+          children: [
+            { name: '__init__.py',    icon: '🔹', layer: 'backend', type: 'file', phase: 'Phase 1 — Auto-generated', desc: 'Makes this folder a Python package. <strong>Never edit.</strong>' },
+            { name: 'models.py',      icon: '🗃️', layer: 'backend', type: 'file', phase: 'Phase 2 — Define DB tables', desc: '<strong>Database table definitions in Python.</strong> You define classes here like <strong>Cafe</strong>, <strong>Ward</strong>, <strong>Road</strong>. Django reads these and creates the actual SQL tables via migrations.' },
+            { name: 'views.py',       icon: '👁️', layer: 'backend', type: 'file', phase: 'Phase 3 — Core API logic', desc: '<strong>The logic layer.</strong> Contains functions/classes that run when an API endpoint is called. Each view: receives request → processes data → returns JSON response. This is where you write buffer analysis, suitability scoring, etc.' },
+            { name: 'serializers.py', icon: '🔄', layer: 'backend', type: 'file', phase: 'Phase 3 — Created with views', desc: '<strong>Converts Python objects ↔ JSON.</strong> When a Cafe model object comes from the database, the serializer turns it into JSON that the frontend can read. Also validates incoming request data.' },
+            { name: 'urls.py',        icon: '🛣️', layer: 'backend', type: 'file', phase: 'Phase 3 — Created with views', desc: '<strong>API-level URL routes.</strong> Example: path("cafes/nearby/", NearbyView.as_view()). Plugged into the main urls.py with a prefix like /api/.' },
+            { name: 'admin.py',       icon: '🔧', layer: 'backend', type: 'file', phase: 'Phase 2 — Register models', desc: 'Registers your models with Django\'s built-in admin panel. After registering, you can view/edit Cafe records at <strong>/admin/</strong> in the browser.' },
+            { name: 'apps.py',        icon: '🔹', layer: 'backend', type: 'file', phase: 'Phase 1 — Auto-generated', desc: 'App configuration. Tells Django the name of this app. <strong>Rarely edited.</strong>' },
+            { name: 'migrations/',    icon: '📜', layer: 'backend', type: 'folder', open: false, phase: 'Phase 2+ — Auto-generated by Django', desc: '<strong>Auto-generated database migration files.</strong> Every time you change models.py and run <strong>python manage.py makemigrations</strong>, Django creates a new file here describing what changed. Never edit manually.', children: [
+              { name: '0001_initial.py', icon: '📄', layer: 'backend', type: 'file', phase: 'Auto-generated', desc: 'First migration — creates all initial database tables. Auto-generated by Django. Do not edit.' },
+              { name: '...', icon: '📄', layer: 'backend', type: 'file', phase: 'Auto-generated each time', desc: 'New migration files are created each time you change models.py and run makemigrations.' },
+            ]},
+            { name: 'tests.py',       icon: '🧪', layer: 'backend', type: 'file', phase: 'Phase 6 — Testing', desc: 'Unit tests for API views and logic. Run with <strong>python manage.py test</strong>. Write tests for buffer analysis, suitability scoring, and recommendation logic.' },
+          ]
+        },
+        {
+          name: 'ml_engine/',
+          icon: '🧠',
+          layer: 'ml',
+          type: 'folder',
+          open: true,
+          phase: 'Phase 1 — Created by: python manage.py startapp ml_engine',
+          desc: '<strong>The ML serving Django app.</strong> Loads the trained Random Forest model (.pkl) and exposes a /api/predict/ endpoint. When the backend needs a prediction, it calls this app.',
+          children: [
+            { name: '__init__.py', icon: '🔹', layer: 'ml', type: 'file', phase: 'Phase 1 — Auto-generated', desc: 'Makes this folder a Python package. Never edit.' },
+            { name: 'predictor.py', icon: '🌲', layer: 'ml', type: 'file', phase: 'Phase 4 — ML integration', desc: '<strong>Loads and runs the ML model.</strong> Uses joblib to load rf_model.pkl on server startup. Has a predict(features) function that accepts a feature vector and returns the predicted café type and confidence score.' },
+            { name: 'views.py',    icon: '📮', layer: 'ml', type: 'file', phase: 'Phase 4 — ML endpoint', desc: '<strong>The /api/predict/ endpoint.</strong> Receives spatial features from the main API, passes them to predictor.py, and returns JSON like { "predicted_type": "Bakery Café", "confidence": 0.87 }.' },
+            { name: 'apps.py',     icon: '🔹', layer: 'ml', type: 'file', phase: 'Phase 1 — Auto-generated', desc: 'App configuration for ml_engine. Auto-generated by Django.' },
+          ]
+        },
+        { name: 'manage.py',       icon: '🎮', layer: 'backend', type: 'file', phase: 'Phase 1 — Auto-generated, never edit', desc: '<strong>Django\'s command runner.</strong> You use this constantly:<br>• <strong>python manage.py runserver</strong> — start dev server<br>• <strong>python manage.py migrate</strong> — apply DB changes<br>• <strong>python manage.py makemigrations</strong> — generate migration files<br>• <strong>python manage.py createsuperuser</strong> — create admin user' },
+        { name: 'requirements.txt', icon: '📋', layer: 'backend', type: 'file', phase: 'Phase 1 — Create first, install from it', desc: '<strong>The package shopping list.</strong> Lists every Python library the project needs with exact version numbers. Share this with teammates — they run <strong>pip install -r requirements.txt</strong> to install everything at once.' },
+        { name: '.env',            icon: '🔒', layer: 'git', type: 'file', phase: 'Phase 1 — Create, NEVER commit to Git', desc: '<strong>Secret keys and passwords.</strong> Contains DATABASE_URL, GOOGLE_API_KEY, SECRET_KEY, etc. This file NEVER goes to GitHub — it\'s in .gitignore. Each team member creates their own copy.' },
+        { name: '.env.example',    icon: '📝', layer: 'git', type: 'file', phase: 'Phase 1 — Create and commit to Git', desc: 'Same structure as .env but with <strong>empty values</strong>. This IS committed to Git so teammates know what variables they need to fill in.' },
+      ]
+    },
+    {
+      name: 'frontend/',
+      icon: '🖥️',
+      layer: 'frontend',
+      type: 'folder',
+      open: true,
+      phase: 'Phase 1 — Created by: mkdir frontend',
+      desc: '<strong>All user-facing HTML, CSS, and JavaScript.</strong> This is what runs in the user\'s browser. Contains the Leaflet.js map, login page, results sidebar, and all the logic that calls the Django API.',
+      children: [
+        { name: 'index.html', icon: '🔐', layer: 'frontend', type: 'file', phase: 'Phase 5 — Frontend development', desc: '<strong>The login page.</strong> Shows the Google Sign-In button. After successful OAuth login, redirects the user to map.html with their token.' },
+        { name: 'map.html',   icon: '🗺️', layer: 'frontend', type: 'file', phase: 'Phase 5 — Main UI', desc: '<strong>The main map dashboard.</strong> Contains the Leaflet.js map div, the café type dropdown, the analyze button, and the results sidebar panel. This is the core UI page users interact with.' },
+        {
+          name: 'css/',
+          icon: '🎨',
+          layer: 'frontend',
+          type: 'folder',
+          open: true,
+          phase: 'Phase 5 — Created with frontend dev',
+          desc: 'Stylesheets folder. Keeps CSS separate from HTML for cleaner code.',
+          children: [
+            { name: 'style.css', icon: '💄', layer: 'frontend', type: 'file', phase: 'Phase 5 — Styling', desc: '<strong>All visual styles.</strong> Map layout, sidebar styles, results cards, loading states, dropdown, marker popups. Imported by both index.html and map.html.' },
+          ]
+        },
+        {
+          name: 'js/',
+          icon: '⚡',
+          layer: 'frontend',
+          type: 'folder',
+          open: true,
+          phase: 'Phase 5 — Created with frontend dev',
+          desc: 'JavaScript files folder. Split by responsibility — each file does one specific job.',
+          children: [
+            { name: 'auth.js',  icon: '🔑', layer: 'frontend', type: 'file', phase: 'Phase 5 — Auth logic', desc: '<strong>Google Sign-In logic.</strong> Initializes the Google Identity Services library, handles the OAuth callback, stores the JWT token in localStorage, and checks authentication on page load.' },
+            { name: 'map.js',   icon: '🗺️', layer: 'frontend', type: 'file', phase: 'Phase 5 — Map logic', desc: '<strong>Leaflet.js map controller.</strong> Initializes the map centered on Kathmandu, handles map click events, places the pin marker, draws the 500m circle buffer, adds café markers with popups, and manages the heatmap overlay.' },
+            { name: 'api.js',   icon: '📡', layer: 'frontend', type: 'file', phase: 'Phase 5 — API calls', desc: '<strong>All calls to the Django backend.</strong> Functions like getNearby(lat, lng), getPrediction(features), getTop5(lat, lng). Handles fetch(), attaches auth headers, parses responses, and passes data to map.js and ui.js.' },
+            { name: 'ui.js',    icon: '🎛️', layer: 'frontend', type: 'file', phase: 'Phase 5 — UI updates', desc: '<strong>DOM manipulation.</strong> Updates the results sidebar with top-5 café cards, shows the prediction badge, renders suitability metric bars, handles loading spinners, and manages error messages.' },
+          ]
+        }
+      ]
+    },
+    {
+      name: 'ml/',
+      icon: '🔬',
+      layer: 'ml',
+      type: 'folder',
+      open: true,
+      phase: 'Phase 1 — Created by: mkdir ml',
+      desc: '<strong>Standalone ML pipeline scripts.</strong> These are run once (or occasionally) to train the model — NOT part of the web server. You run these from the terminal to collect data, process it, train the model, and save it as a .pkl file.',
+      children: [
+        { name: 'collect_data.py', icon: '🕷️', layer: 'ml', type: 'file', phase: 'Phase 2 — Data collection', desc: '<strong>Scrapes café data from Google Places API.</strong> Loops a grid of points across Kathmandu, calls the nearbySearch endpoint for each, and saves results to data/kathmandu_cafes.csv. Run once with: <strong>python collect_data.py</strong>' },
+        { name: 'preprocess.py',   icon: '🧹', layer: 'ml', type: 'file', phase: 'Phase 4 — Feature engineering', desc: '<strong>Cleans and transforms raw data into ML features.</strong> For each café in the CSV, computes: competitor_count, avg_rating_in_radius, road_length_m, population_density. Outputs a clean feature matrix CSV ready for training.' },
+        { name: 'train_model.py',  icon: '🏋️', layer: 'ml', type: 'file', phase: 'Phase 4 — Model training', desc: '<strong>Trains the Random Forest classifier.</strong> Loads the feature matrix, splits into train/test sets (80/20), fits RandomForestClassifier, and saves the trained model to <strong>ml/models/rf_model.pkl</strong>.' },
+        { name: 'evaluate.py',     icon: '📊', layer: 'ml', type: 'file', phase: 'Phase 4 — Model evaluation', desc: '<strong>Measures model performance.</strong> Prints accuracy, precision, recall, and F1-score for each café type. Also plots a confusion matrix. Run this after training to decide if the model is good enough.' },
+        {
+          name: 'models/',
+          icon: '💾',
+          layer: 'ml',
+          type: 'folder',
+          open: true,
+          phase: 'Phase 4 — Created by train_model.py',
+          desc: 'Stores the trained binary model files. These are NOT committed to Git (listed in .gitignore) because .pkl files can be large. Copy to backend when ready to serve.',
+          children: [
+            { name: 'rf_model.pkl',      icon: '🌲', layer: 'ml', type: 'file', phase: 'Phase 4 — Output of train_model.py', desc: '<strong>The trained Random Forest model.</strong> Binary file created by joblib.dump(). The Django backend (ml_engine/predictor.py) loads this file on startup to serve predictions. Regenerate by re-running train_model.py.' },
+            { name: 'label_encoder.pkl', icon: '🏷️', layer: 'ml', type: 'file', phase: 'Phase 4 — Output of train_model.py', desc: '<strong>Maps café type numbers back to names.</strong> The model outputs integers (0, 1, 2, 3). This encoder translates them to "Coffee Shop", "Bakery", etc. Must be saved alongside rf_model.pkl.' },
+          ]
+        }
+      ]
+    },
+    {
+      name: 'data/',
+      icon: '🗃️',
+      layer: 'data',
+      type: 'folder',
+      open: true,
+      phase: 'Phase 1 — Created by: mkdir data',
+      desc: '<strong>Raw collected datasets.</strong> These files are the raw input data for the ML pipeline. Not committed to Git (large files). Each file is collected/downloaded in Phase 2.',
+      children: [
+        { name: 'kathmandu_cafes.csv',   icon: '☕', layer: 'data', type: 'file', phase: 'Phase 2 — Output of collect_data.py', desc: '<strong>All cafés in Kathmandu from Google Places API.</strong> Columns: place_id, name, lat, lng, type, rating, review_count, price_level, is_operational. This is the primary training data source.' },
+        { name: 'kathmandu_roads.geojson', icon: '🛣️', layer: 'data', type: 'file', phase: 'Phase 2 — Downloaded from Overpass API', desc: '<strong>Road network of Kathmandu from OpenStreetMap.</strong> GeoJSON format with LINESTRING geometries for every road. Used to compute road accessibility scores in the buffer analysis.' },
+        { name: 'kathmandu_wards.geojson', icon: '🏙️', layer: 'data', type: 'file', phase: 'Phase 2 — Downloaded from OpenData Nepal', desc: '<strong>Administrative ward boundaries.</strong> POLYGON geometries for each of Kathmandu\'s 32 wards. Used for the spatial join with census population data.' },
+        { name: 'kathmandu_census.csv',    icon: '👥', layer: 'data', type: 'file', phase: 'Phase 2 — Downloaded from NSO Nepal', desc: '<strong>Nepal Census 2021 ward-level data.</strong> Columns: ward_no, population, households, area_sqkm, pop_density. Downloaded from censusnepal.cbs.gov.np.' },
+      ]
+    },
+    { name: '.gitignore',        icon: '🚫', layer: 'git', type: 'file', phase: 'Phase 1 — Create before first git commit', desc: '<strong>Tells Git what to ignore.</strong> Critical entries: <strong>venv/</strong> (huge, reproducible), <strong>.env</strong> (secret keys!), <strong>*.pkl</strong> (large binary files), <strong>__pycache__/</strong> (auto-generated bytecode), <strong>data/*.csv</strong> (large datasets). Always create this BEFORE your first git add .' },
+    { name: 'README.md',         icon: '📖', layer: 'git', type: 'file', phase: 'Phase 1 — Write a basic one now', desc: '<strong>Project documentation on GitHub.</strong> Should explain: what the project does, how to set it up (link to setup guide), how to run it, team members. GitHub shows this automatically on the repo homepage.' },
+    { name: '.env.example',      icon: '📝', layer: 'git', type: 'file', phase: 'Phase 1 — Commit this one (not .env)', desc: '<strong>Template for the .env file.</strong> Has the same variable names as .env but with empty/placeholder values. Teammates copy this, rename to .env, and fill in their own values.' },
+    { name: 'docker-compose.yml', icon: '🐳', layer: 'git', type: 'file', phase: 'Phase 7 — Optional, for deployment', desc: '<strong>Orchestrates all services with one command.</strong> Optional but powerful — defines Django, PostgreSQL, and PostGIS as containers. Run <strong>docker-compose up</strong> to start everything. Great for deployment and onboarding new teammates.' },
+  ]
+};
+
+// ══════════════════════════════════════════════════════
+// LAYER COLORS
+// ══════════════════════════════════════════════════════
+const LAYER_COLORS = {
+  root:     'var(--root)',
+  backend:  'var(--backend)',
+  frontend: 'var(--frontend)',
+  ml:       'var(--ml)',
+  data:     'var(--data)',
+  git:      'var(--git)',
+  config:   'var(--config)',
+  file:     'var(--file)',
+};
+
+const LAYER_LABELS = {
+  root: 'ROOT', backend: 'BACKEND', frontend: 'FRONTEND',
+  ml: 'ML / AI', data: 'DATA', git: 'GIT / CONFIG',
+};
+
+// ══════════════════════════════════════════════════════
+// BUILD TREE
+// ══════════════════════════════════════════════════════
+let selectedEl = null;
+
+function buildTree(node, depth = 0) {
+  const li = document.createElement('li');
+  li.className = 'node-wrap';
+  li.dataset.name = node.name.toLowerCase();
+  li.dataset.layer = node.layer;
+
+  const row = document.createElement('div');
+  row.className = 'node-row';
+
+  // Indent spacers
+  const indent = document.createElement('div');
+  indent.className = 'node-indent';
+  indent.style.paddingLeft = (depth * 22) + 'px';
+  row.appendChild(indent);
+
+  // Clickable node element
+  const el = document.createElement('div');
+  el.className = 'node-el';
+
+  // Toggle button for folders
+  if (node.type === 'folder' && node.children) {
+    const toggle = document.createElement('div');
+    toggle.className = 'node-toggle' + (node.open ? ' open' : '');
+    toggle.textContent = node.open ? '▾' : '▸';
+    el.appendChild(toggle);
+  } else {
+    const spacer = document.createElement('div');
+    spacer.style.width = '16px';
+    el.appendChild(spacer);
+  }
+
+  // Icon
+  const icon = document.createElement('span');
+  icon.className = 'node-icon';
+  icon.textContent = node.icon;
+  el.appendChild(icon);
+
+  // Name
+  const name = document.createElement('span');
+  name.className = 'node-name';
+  name.textContent = node.name;
+  name.style.color = LAYER_COLORS[node.layer] || 'var(--file)';
+  el.appendChild(name);
+
+  // Layer badge
+  if (depth <= 1) {
+    const badge = document.createElement('span');
+    badge.className = 'node-badge';
+    badge.textContent = LAYER_LABELS[node.layer] || '';
+    badge.style.background = `${LAYER_COLORS[node.layer]}22`;
+    badge.style.color = LAYER_COLORS[node.layer];
+    badge.style.border = `1px solid ${LAYER_COLORS[node.layer]}44`;
+    el.appendChild(badge);
+  }
+
+  row.appendChild(el);
+  li.appendChild(row);
+
+  // Children
+  let childrenUl = null;
+  if (node.type === 'folder' && node.children) {
+    childrenUl = document.createElement('ul');
+    childrenUl.className = 'node-children' + (node.open ? '' : ' collapsed');
+
+    node.children.forEach(child => {
+      childrenUl.appendChild(buildTree(child, depth + 1));
+    });
+    li.appendChild(childrenUl);
+
+    // Toggle click
+    el.addEventListener('click', (e) => {
+      const toggle = el.querySelector('.node-toggle');
+      const isOpen = !childrenUl.classList.contains('collapsed');
+      childrenUl.classList.toggle('collapsed');
+      if (toggle) {
+        toggle.textContent = isOpen ? '▸' : '▾';
+        toggle.classList.toggle('open', !isOpen);
+      }
+    });
+  }
+
+  // Select click for detail panel
+  el.addEventListener('click', (e) => {
+    if (selectedEl) selectedEl.classList.remove('selected');
+    el.classList.add('selected');
+    selectedEl = el;
+    showDetail(node);
+  });
+
+  return li;
+}
+
+// ══════════════════════════════════════════════════════
+// DETAIL PANEL
+// ══════════════════════════════════════════════════════
+function showDetail(node) {
+  const empty = document.getElementById('detailEmpty');
+  const content = document.getElementById('detailContent');
+
+  empty.style.display = 'none';
+  content.classList.add('visible');
+
+  const color = LAYER_COLORS[node.layer] || 'var(--file)';
+  const label = LAYER_LABELS[node.layer] || '';
+
+  content.innerHTML = `
+    <div class="detail-name" style="color:${color}">${node.icon} ${node.name}</div>
+    <div class="detail-path">${node.type === 'folder' ? '📁 Folder' : '📄 File'} · Layer: ${label}</div>
+    <div class="detail-tag" style="background:${color}22;color:${color};border:1px solid ${color}44">${label}</div>
+
+    <div class="detail-section-title">What it does</div>
+    <div class="detail-desc">${node.desc || 'No description available.'}</div>
+
+    <div class="detail-section-title">When it\'s created</div>
+    <div class="detail-phase">${node.phase || '—'}</div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════
+// EXPAND / COLLAPSE ALL
+// ══════════════════════════════════════════════════════
+function expandAll() {
+  document.querySelectorAll('.node-children').forEach(ul => ul.classList.remove('collapsed'));
+  document.querySelectorAll('.node-toggle').forEach(t => { t.textContent = '▾'; t.classList.add('open'); });
+}
+
+function collapseAll() {
+  document.querySelectorAll('.node-children').forEach(ul => ul.classList.add('collapsed'));
+  document.querySelectorAll('.node-toggle').forEach(t => { t.textContent = '▸'; t.classList.remove('open'); });
+}
+
+// ══════════════════════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════════════════════
+function searchTree(query) {
+  const q = query.toLowerCase().trim();
+  document.querySelectorAll('.node-wrap').forEach(li => {
+    if (!q) {
+      li.classList.remove('search-hidden');
+      li.querySelectorAll('.node-name').forEach(n => n.classList.remove('highlight'));
+      return;
+    }
+    const name = li.dataset.name || '';
+    if (name.includes(q)) {
+      li.classList.remove('search-hidden');
+      // Show all ancestors
+      let parent = li.parentElement;
+      while (parent && !parent.classList.contains('tree-root')) {
+        if (parent.classList.contains('node-children')) parent.classList.remove('collapsed');
+        if (parent.classList.contains('node-wrap')) parent.classList.remove('search-hidden');
+        parent = parent.parentElement;
+      }
+    } else {
+      li.classList.add('search-hidden');
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// LAYER FILTER
+// ══════════════════════════════════════════════════════
+let hiddenLayers = new Set();
+
+function filterLayer(el) {
+  const layer = el.dataset.layer;
+  if (hiddenLayers.has(layer)) {
+    hiddenLayers.delete(layer);
+    el.classList.remove('hidden');
+  } else {
+    hiddenLayers.add(layer);
+    el.classList.add('hidden');
+  }
+  document.querySelectorAll('.node-wrap').forEach(li => {
+    if (hiddenLayers.has(li.dataset.layer)) {
+      li.classList.add('search-hidden');
+    } else {
+      li.classList.remove('search-hidden');
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const root = document.getElementById('treeRoot');
+  root.appendChild(buildTree(TREE, 0));
+});
+</script>
+</body>
+</html>

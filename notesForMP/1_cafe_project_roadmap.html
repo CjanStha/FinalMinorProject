@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeLocate ML — Project Roadmap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0b0e14;
+    --surface: #13171f;
+    --surface2: #1a2030;
+    --border: #252c3d;
+    --accent: #e8c547;
+    --accent2: #5b8af5;
+    --accent3: #e05c6e;
+    --green: #4fd87f;
+    --text: #e4eaf5;
+    --muted: #6a7a99;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(91,138,245,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91,138,245,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* HEADER */
+  header { margin-bottom: 56px; }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 560px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  .tab.active {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* PANELS */
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* OVERVIEW CARDS */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stat-card.yellow::before { background: var(--accent); }
+  .stat-card.blue::before { background: var(--accent2); }
+  .stat-card.red::before { background: var(--accent3); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-num {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-card.yellow .stat-num { color: var(--accent); }
+  .stat-card.blue .stat-num { color: var(--accent2); }
+  .stat-card.red .stat-num { color: var(--accent3); }
+  .stat-card.green .stat-num { color: var(--green); }
+  .stat-label { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ARCHITECTURE LAYERS */
+  .arch-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+  .arch-layer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .arch-layer:hover { border-color: var(--accent2); transform: translateX(4px); }
+  .arch-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .arch-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .arch-tech {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .arch-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .arch-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+  }
+  .badge-fe { background: rgba(232,197,71,0.15); color: var(--accent); border: 1px solid rgba(232,197,71,0.3); }
+  .badge-be { background: rgba(91,138,245,0.15); color: var(--accent2); border: 1px solid rgba(91,138,245,0.3); }
+  .badge-ml { background: rgba(79,216,127,0.15); color: var(--green); border: 1px solid rgba(79,216,127,0.3); }
+  .badge-db { background: rgba(224,92,110,0.15); color: var(--accent3); border: 1px solid rgba(224,92,110,0.3); }
+
+  /* ROADMAP STEPS */
+  .phase-block { margin-bottom: 32px; }
+  .phase-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .phase-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .phase-name { font-size: 18px; font-weight: 700; }
+  .phase-week { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  .steps-list { display: flex; flex-direction: column; gap: 8px; padding-left: 16px; border-left: 2px solid var(--border); margin-left: 15px; }
+  .step-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .step-item:hover { border-color: var(--border); border-color: rgba(91,138,245,0.4); }
+  .step-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+  .step-check.done { background: var(--green); border-color: var(--green); color: #000; }
+  .step-content { flex: 1; }
+  .step-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .step-detail { font-size: 12px; color: var(--muted); line-height: 1.5; font-family: var(--mono); }
+  .step-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    margin-top: 6px;
+  }
+  .tag-fe { background: rgba(232,197,71,0.12); color: var(--accent); }
+  .tag-be { background: rgba(91,138,245,0.12); color: var(--accent2); }
+  .tag-ml { background: rgba(79,216,127,0.12); color: var(--green); }
+  .tag-db { background: rgba(224,92,110,0.12); color: var(--accent3); }
+  .tag-all { background: rgba(255,255,255,0.07); color: var(--muted); }
+
+  /* TECH STACK */
+  .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 32px; }
+  .tech-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .tech-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+  .tech-icon { font-size: 28px; margin-bottom: 8px; }
+  .tech-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .tech-role { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+  /* GANTT */
+  .gantt-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+  .gantt-table th {
+    padding: 10px 8px;
+    text-align: center;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+  .gantt-table td {
+    padding: 8px;
+    border-bottom: 1px solid rgba(37,44,61,0.5);
+    vertical-align: middle;
+  }
+  .gantt-table .task-name { color: var(--text); font-family: var(--sans); font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .gantt-cell {
+    width: 50px;
+    height: 28px;
+    border-radius: 4px;
+    margin: 2px auto;
+  }
+  .gantt-cell.active { background: var(--accent2); opacity: 0.8; }
+  .gantt-cell.partial { background: var(--accent); opacity: 0.6; }
+  .gantt-cell.empty { background: transparent; }
+  .gantt-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    overflow-x: auto;
+  }
+
+  /* PROGRESS BAR */
+  .progress-section { margin-bottom: 40px; }
+  .progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .progress-label { font-size: 13px; font-weight: 600; width: 180px; flex-shrink: 0; }
+  .progress-bar-bg { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+  .progress-pct { font-family: var(--mono); font-size: 11px; color: var(--muted); width: 36px; text-align: right; }
+
+  /* FOOTER NOTE */
+  .footer-note {
+    margin-top: 48px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-family: var(--mono);
+  }
+
+  /* COMPLETED counter */
+  .progress-counter {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .progress-counter span { color: var(--green); font-weight: 700; }
+
+  @media (max-width: 600px) {
+    .tabs { flex-direction: column; }
+    .tab { min-width: auto; }
+    .overview-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="tag">Minor Project — ACE / BCT</div>
+    <h1>CafeLocate <span>ML</span><br>Project Roadmap</h1>
+    <p class="subtitle">ML-Based Cafe Location & Type Suitability Prediction System<br>
+    Tribhuvan University · ACEM · CT-654 · 2026</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+    <button class="tab" onclick="switchTab('architecture')">🏗️ Architecture</button>
+    <button class="tab" onclick="switchTab('roadmap')">🗺️ Roadmap</button>
+    <button class="tab" onclick="switchTab('techstack')">⚙️ Tech Stack</button>
+    <button class="tab" onclick="switchTab('timeline')">📅 Timeline</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="overview" class="panel active">
+    <div class="overview-grid">
+      <div class="stat-card yellow">
+        <div class="stat-num">8</div>
+        <div class="stat-label">Weeks Duration</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-num">4</div>
+        <div class="stat-label">System Layers</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Data Sources</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Team Members</div>
+      </div>
+    </div>
+
+    <div class="section-label">What This Project Does</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:32px;line-height:1.9;font-size:14px;color:var(--muted);">
+      A <strong style="color:var(--text)">web-based GIS + Machine Learning platform</strong> that helps entrepreneurs in Kathmandu decide <em>where</em> to open a café and <em>what type</em> of café to open. The user pins a location on the map, and the system analyses a <strong style="color:var(--accent)">500m radius</strong> using data from Google Maps, OpenStreetMap, and Nepal Census 2021 — then uses a <strong style="color:var(--green)">Random Forest classifier</strong> to predict the optimal café type (Coffee Shop, Bakery, Restaurant, etc.) and lists the top-5 successful cafés already in that area.
+    </div>
+
+    <div class="section-label">Complexity by Layer</div>
+    <div class="progress-section">
+      <div class="progress-row">
+        <div class="progress-label">Frontend / UI</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:65%;background:var(--accent)"></div></div>
+        <div class="progress-pct">65%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Backend / Django API</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:80%;background:var(--accent2)"></div></div>
+        <div class="progress-pct">80%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">ML Model</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:75%;background:var(--green)"></div></div>
+        <div class="progress-pct">75%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Database / PostGIS</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:55%;background:var(--accent3)"></div></div>
+        <div class="progress-pct">55%</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">Data Collection</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:70%;background:#a78bfa)"></div></div>
+        <div class="progress-pct">70%</div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:8px;">* Relative effort/complexity, not completion %</p>
+    </div>
+
+    <div class="section-label">Core User Flow</div>
+    <div style="display:flex;gap:0;flex-wrap:wrap;margin-bottom:32px;">
+      {['Login', 'View Map', 'Select Café Type', 'Pin Location', 'View 500m Analysis', 'Get Recommendation'].map((s,i,arr) => `
+        <div style="background:var(--surface);border:1px solid var(--border);padding:12px 16px;font-size:12px;font-weight:600;border-right:none;${i===0?'border-radius:8px 0 0 8px':''} ${i===arr.length-1?'border-right:1px solid var(--border);border-radius:0 8px 8px 0':''}">
+          <span style="color:var(--accent2);font-family:var(--mono);font-size:10px;">0${i+1} </span>${s}
+        </div>
+      `).join('<div style="display:flex;align-items:center;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0 4px;color:var(--muted);">→</div>')}
+    </div>
+
+    <div class="footer-note">
+      💡 <strong style="color:var(--text)">Key innovation:</strong> Unlike existing systems that only say "good" or "bad" location, this project predicts the <em>specific type</em> of café that will thrive — filling the market gap identified by spatial + demographic analysis.
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div id="architecture" class="panel">
+    <div class="section-label">System Layers — Click to Expand</div>
+    <div class="arch-stack">
+
+      <div class="arch-layer" onclick="toggleDetails('fe-details')">
+        <div class="arch-icon" style="background:rgba(232,197,71,0.1);">🖥️</div>
+        <div style="flex:1">
+          <div class="arch-title">Frontend Layer</div>
+          <div class="arch-tech">HTML · CSS · JavaScript · Leaflet.js · OpenStreetMap</div>
+          <div class="arch-desc">The user-facing interface. Renders the interactive Kathmandu map, handles location pinning, shows the 500m radius buffer, and displays recommendation results and suitability dashboards.</div>
+          <div id="fe-details" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+            <p style="font-size:12px;color:var(--muted);line-height:1.7;font-family:var(--mono);">
+              📌 <strong style="color:var(--text)">Pages:</strong> Login · Map Dashboard · Results Panel<br>
+              📌 <strong style="color:var(--text)">Map Library:</strong> Leaflet.js renders OSM tiles, handles click events for pin drop, draws circular buffer overlay<br>
+              📌 <strong style="color:var(--text)">Auth UI:</strong> Google OAuth 2.0 sign-in button → redirect to dashboard<br>
+              📌 <strong style="color:var(--text)">Results UI:</strong> Sidebar panel showing Top 5 cafés with ratings, and the ML-predicted café type badge<br>
+              📌 <strong style="color:var(--text)">Café selector:</strong> Dropdown (Coffee Shop / Bakery / Dessert Café / Restaurant) before pinning
+            </p>
+          </div>
+        </div>
+        <span class="arch-badge badge-fe">FRONTEND</span>
+      </div>
+
+      <div class="arch-layer" onclick="toggleDetails('be-details')">
+        <div class="arch-icon" style="background:rgba(91,138,245,0.1);">⚙️</div>
+        <div style="flex:1">
+          <div class="arch-title">Backend / API Layer</div>
+          <div class="arch-tech">Python · Django · Django REST Framework · Google Places API · Overpass API</div>
+          <div class="arch-desc">Handles all business logic. Receives the lat/lng pin from the frontend, queries external APIs and the database, runs GIS buffer analysis, scores suitability, and calls the ML model for prediction.</div>
+          <div id="be-details" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+            <p style="font-size:12px;color:var(--muted);line-height:1.7;font-family:var(--mono);">
+              📌 <strong style="color:var(--text)">Auth Module:</strong> Validates Google OAuth token, creates/fetches user session<br>
+              📌 <strong style="color:var(--text)">GIS Module:</strong> Takes (lat, lng) → creates 500m Shapely circle → runs PostGIS spatial query to count competitors, roads, amenities<br>
+              📌 <strong style="color:var(--text)">Scoring Engine:</strong> Weights competitor density + road accessibility + population density → suitability score (0–100)<br>
+              📌 <strong style="color:var(--text)">Recommendation Engine:</strong> Sorts cafés by rating × review_count → returns Top 5<br>
+              📌 <strong style="color:var(--text)">ML Endpoint:</strong> POST /api/predict/ → receives feature vector → returns predicted café type + confidence
+            </p>
+          </div>
+        </div>
+        <span class="arch-badge badge-be">BACKEND</span>
+      </div>
+
+      <div class="arch-layer" onclick="toggleDetails('ml-details')">
+        <div class="arch-icon" style="background:rgba(79,216,127,0.1);">🧠</div>
+        <div style="flex:1">
+          <div class="arch-title">Machine Learning Layer</div>
+          <div class="arch-tech">Scikit-learn · Random Forest · Pandas · NumPy · Joblib</div>
+          <div class="arch-desc">The core innovation. A trained Random Forest classifier that takes spatial features (competitor density, road index, population) and predicts which café type has the best chance of success at that location.</div>
+          <div id="ml-details" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+            <p style="font-size:12px;color:var(--muted);line-height:1.7;font-family:var(--mono);">
+              📌 <strong style="color:var(--text)">Input features:</strong> competitor_count, avg_rating_in_radius, road_length_m, population_density, business_type_counts<br>
+              📌 <strong style="color:var(--text)">Target label:</strong> café_type (Coffee / Bakery / Dessert / Restaurant)<br>
+              📌 <strong style="color:var(--text)">Training data:</strong> Scraped Kathmandu café data → feature-engineered per 500m cell<br>
+              📌 <strong style="color:var(--text)">Algorithm:</strong> Random Forest (n_estimators=100, max_depth=auto)<br>
+              📌 <strong style="color:var(--text)">Eval metrics:</strong> Accuracy, Precision, Recall, F1-Score per class<br>
+              📌 <strong style="color:var(--text)">Serving:</strong> Model saved as .pkl via Joblib, loaded by Django on startup
+            </p>
+          </div>
+        </div>
+        <span class="arch-badge badge-ml">ML</span>
+      </div>
+
+      <div class="arch-layer" onclick="toggleDetails('db-details')">
+        <div class="arch-icon" style="background:rgba(224,92,110,0.1);">🗄️</div>
+        <div style="flex:1">
+          <div class="arch-title">Data Layer</div>
+          <div class="arch-tech">PostgreSQL · PostGIS · OSM · Google Maps API · Nepal Census 2021</div>
+          <div class="arch-desc">Central spatial database. Stores preprocessed café locations, ward-level population data, road network geometries, and user data. PostGIS extension enables all spatial queries.</div>
+          <div id="db-details" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+            <p style="font-size:12px;color:var(--muted);line-height:1.7;font-family:var(--mono);">
+              📌 <strong style="color:var(--text)">Table: cafes</strong> — place_id, name, lat, lng, type, rating, review_count, geom (POINT)<br>
+              📌 <strong style="color:var(--text)">Table: roads</strong> — osm_id, highway_type, geom (LINESTRING)<br>
+              📌 <strong style="color:var(--text)">Table: wards</strong> — ward_no, population, household_count, geom (POLYGON)<br>
+              📌 <strong style="color:var(--text)">Table: users</strong> — google_id, email, saved_locations<br>
+              📌 <strong style="color:var(--text)">Key query:</strong> ST_DWithin(cafe.geom, ST_MakePoint(lng,lat)::geography, 500) → returns all cafés in radius
+            </p>
+          </div>
+        </div>
+        <span class="arch-badge badge-db">DATABASE</span>
+      </div>
+
+    </div>
+    <p style="font-size:12px;color:var(--muted);font-family:var(--mono);">↑ Click any layer to see implementation details</p>
+  </div>
+
+  <!-- ROADMAP -->
+  <div id="roadmap" class="panel">
+
+    <div class="progress-counter" id="counterDisplay">✅ <span id="doneCount">0</span> of <span id="totalCount">0</span> steps completed — click checkboxes to track progress</div>
+
+    <!-- PHASE 1 -->
+    <div class="phase-block">
+      <div class="phase-title">
+        <div class="phase-num" style="background:rgba(232,197,71,0.15);color:var(--accent)">1</div>
+        <div class="phase-name">Setup & Environment</div>
+        <div class="phase-week">Week 1</div>
+      </div>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Install Python, pip, virtualenv</div><div class="step-detail">python -m venv venv → activate → pip install django djangorestframework</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Install PostgreSQL + PostGIS extension</div><div class="step-detail">CREATE EXTENSION postgis; — enables all spatial geometry functions</div><span class="step-tag tag-db">DATABASE</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Set up Django project structure</div><div class="step-detail">django-admin startproject cafelocate → startapp api, startapp ml_engine</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Get Google Cloud API keys</div><div class="step-detail">Enable Places API & Maps JavaScript API on Google Cloud Console — note quota limits</div><span class="step-tag tag-all">ALL</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Create GitHub repo & set up branches</div><div class="step-detail">main / dev / feature-frontend / feature-ml — commit .env.example, .gitignore</div><span class="step-tag tag-all">ALL</span></div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-block">
+      <div class="phase-title">
+        <div class="phase-num" style="background:rgba(224,92,110,0.15);color:var(--accent3)">2</div>
+        <div class="phase-name">Data Collection & Database Setup</div>
+        <div class="phase-week">Week 2</div>
+      </div>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Scrape cafés from Google Places API</div><div class="step-detail">Script: loop nearbySearch across Kathmandu grid → save to CSV (name, lat, lng, type, rating, reviews)</div><span class="step-tag tag-db">DATA</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Download OSM road + amenity data</div><div class="step-detail">Use Overpass Turbo query: [highway] and [amenity=cafe] within Kathmandu boundary → export GeoJSON</div><span class="step-tag tag-db">DATA</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Get Nepal Census 2021 ward data</div><div class="step-detail">Download CSV from censusnepal.cbs.gov.np → extract ward_no, population, households for KMC</div><span class="step-tag tag-db">DATA</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Get Kathmandu ward shapefile</div><div class="step-detail">Download from OpenData Nepal or HDX → .shp file with ward boundaries for spatial join</div><span class="step-tag tag-db">DATA</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Design & create database schema</div><div class="step-detail">Create tables: cafes, roads, wards, users — define POINT/LINESTRING/POLYGON geometry columns</div><span class="step-tag tag-db">DATABASE</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Load all data into PostgreSQL/PostGIS</div><div class="step-detail">Use ogr2ogr for shapefiles, psycopg2 scripts for CSV → verify with QGIS or PgAdmin</div><span class="step-tag tag-db">DATABASE</span></div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-block">
+      <div class="phase-title">
+        <div class="phase-num" style="background:rgba(91,138,245,0.15);color:var(--accent2)">3</div>
+        <div class="phase-name">Backend API Development</div>
+        <div class="phase-week">Week 3</div>
+      </div>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Build Google OAuth 2.0 authentication</div><div class="step-detail">Use django-allauth or social-auth-app-django → /auth/google/ endpoint → return JWT token</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Create /api/cafes/nearby/ endpoint</div><div class="step-detail">Accepts lat, lng, radius → runs ST_DWithin PostGIS query → returns JSON list of cafés</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Build spatial feature extraction module</div><div class="step-detail">For a given point: count cafés, sum road length, get ward population within 500m buffer using Shapely + PostGIS</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Build suitability scoring engine</div><div class="step-detail">Weighted formula: score = w1×(1/competitor_density) + w2×road_index + w3×pop_density → normalize 0–100</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Create /api/top5/ endpoint</div><div class="step-detail">Ranks cafés in radius by (rating × log(review_count)) → returns top 5 with details</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Test all endpoints with Postman</div><div class="step-detail">Create Postman collection — test happy path + edge cases (no cafés in radius, invalid coords)</div><span class="step-tag tag-be">BACKEND</span></div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-block">
+      <div class="phase-title">
+        <div class="phase-num" style="background:rgba(79,216,127,0.15);color:var(--green)">4</div>
+        <div class="phase-name">Machine Learning Model</div>
+        <div class="phase-week">Week 4</div>
+      </div>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Feature engineering from collected data</div><div class="step-detail">For each existing café in DB: compute competitor_count, avg_competitor_rating, road_length, pop_density → labeled dataset</div><span class="step-tag tag-ml">ML</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Explore & clean dataset (EDA)</div><div class="step-detail">Pandas profiling → check class balance, missing values, outliers → encode café types as integers</div><span class="step-tag tag-ml">ML</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Train Random Forest classifier</div><div class="step-detail">sklearn RandomForestClassifier → train_test_split(80/20) → fit on feature matrix X, labels y</div><span class="step-tag tag-ml">ML</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Evaluate model performance</div><div class="step-detail">Print classification_report → check accuracy, per-class F1 → if <70%, tune n_estimators, max_depth, min_samples</div><span class="step-tag tag-ml">ML</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Save model with Joblib</div><div class="step-detail">joblib.dump(model, 'rf_model.pkl') → also save label encoder for café type decoding</div><span class="step-tag tag-ml">ML</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Create /api/predict/ Django endpoint</div><div class="step-detail">Load .pkl on startup → POST receives features → model.predict() → return predicted café type + probabilities</div><span class="step-tag tag-ml">ML</span></div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="phase-block">
+      <div class="phase-title">
+        <div class="phase-num" style="background:rgba(232,197,71,0.15);color:var(--accent)">5</div>
+        <div class="phase-name">Frontend Development</div>
+        <div class="phase-week">Week 5</div>
+      </div>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Build login page with Google Sign-In</div><div class="step-detail">Google Identity Services button → on success, send token to backend /auth/google/ → store JWT in localStorage</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Set up Leaflet.js map of Kathmandu</div><div class="step-detail">L.map('map') centered on [27.7172, 85.3240] → add OSM tile layer → set max bounds to KMC boundary</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Implement café type dropdown selector</div><div class="step-detail">Floating panel with "Choose Café Type" dropdown → stores selected type as state variable</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Implement map click → pin + 500m circle</div><div class="step-detail">map.on('click', e) → place L.marker at e.latlng → draw L.circle(latlng, {radius:500})</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Call backend APIs & render café markers</div><div class="step-detail">fetch('/api/cafes/nearby/', {lat, lng}) → loop response → add L.marker per café with popup (name, rating)</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Build results sidebar panel</div><div class="step-detail">Right sidebar: Top 5 list with rating stars, and a highlighted prediction card showing "Best café to open: Bakery Café (87% confidence)"</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Add suitability metrics dashboard</div><div class="step-detail">Show competitor count, road accessibility score, population density as visual gauges or bar indicators</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="phase-block">
+      <div class="phase-title">
+        <div class="phase-num" style="background:rgba(91,138,245,0.15);color:var(--accent2)">6</div>
+        <div class="phase-name">Integration & Testing</div>
+        <div class="phase-week">Week 6–7</div>
+      </div>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Connect frontend ↔ backend end-to-end</div><div class="step-detail">Full flow test: pin on map → API call → ML prediction → results displayed. Fix CORS issues in Django settings</div><span class="step-tag tag-all">ALL</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Unit test backend modules</div><div class="step-detail">Django TestCase for spatial buffer logic, scoring formula, recommendation ranking — test with mock coordinates</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Validate ML predictions with real locations</div><div class="step-detail">Test 10+ known Kathmandu areas (Thamel, Baneshwor, Patan) — verify predicted café type makes logical sense</div><span class="step-tag tag-ml">ML</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Performance test API response time</div><div class="step-detail">Aim for <5 seconds for full analysis. Optimize slow PostGIS queries with spatial indexes (GIST)</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Handle edge cases in UI</div><div class="step-detail">No cafés in radius → show "No competitors found" message. Location outside KMC → alert user</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+      </div>
+    </div>
+
+    <!-- PHASE 7 -->
+    <div class="phase-block">
+      <div class="phase-title">
+        <div class="phase-num" style="background:rgba(224,92,110,0.15);color:var(--accent3)">7</div>
+        <div class="phase-name">Deployment & Documentation</div>
+        <div class="phase-week">Week 8</div>
+      </div>
+      <div class="steps-list">
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Deploy to cloud (Render / Railway / AWS EC2)</div><div class="step-detail">Push Django app → set environment variables (DB_URL, GOOGLE_API_KEY, SECRET_KEY) → run migrations</div><span class="step-tag tag-be">BACKEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Serve frontend (Netlify or same server)</div><div class="step-detail">If React: netlify deploy --prod. If vanilla HTML: Django serves static files via WhiteNoise</div><span class="step-tag tag-fe">FRONTEND</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Write final project report</div><div class="step-detail">Follow TU format: Abstract, Introduction, Literature Review, Methodology, Results, Conclusion, References</div><span class="step-tag tag-all">DOCS</span></div></div>
+        <div class="step-item"><div class="step-check" onclick="toggleCheck(this)"></div><div class="step-content"><div class="step-name">Prepare viva/defense presentation</div><div class="step-detail">10–15 slides: Problem → Solution → Architecture → Demo screenshots → Results → Future scope</div><span class="step-tag tag-all">DOCS</span></div></div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      🔑 <strong style="color:var(--text)">Hardest part:</strong> Building the labeled training dataset — you need enough café data points per type to train a reliable Random Forest. Collect at least 200+ café records across all types before training.
+    </div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div id="techstack" class="panel">
+    <div class="section-label">Frontend</div>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-icon">🗺️</div><div class="tech-name">Leaflet.js</div><div class="tech-role">Interactive map rendering, markers, buffer circles</div></div>
+      <div class="tech-card"><div class="tech-icon">🌐</div><div class="tech-name">OpenStreetMap</div><div class="tech-role">Base map tile layer for Kathmandu</div></div>
+      <div class="tech-card"><div class="tech-icon">🔑</div><div class="tech-name">Google Identity</div><div class="tech-role">OAuth 2.0 sign-in button</div></div>
+      <div class="tech-card"><div class="tech-icon">📊</div><div class="tech-name">HTML/CSS/JS</div><div class="tech-role">UI layout, sidebar, results dashboard</div></div>
+    </div>
+
+    <div class="section-label">Backend</div>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-icon">🐍</div><div class="tech-name">Python 3.11</div><div class="tech-role">Primary language for all backend logic</div></div>
+      <div class="tech-card"><div class="tech-icon">🎸</div><div class="tech-name">Django</div><div class="tech-role">Web framework, routing, ORM, auth</div></div>
+      <div class="tech-card"><div class="tech-icon">📡</div><div class="tech-name">Django REST</div><div class="tech-role">API endpoints (JSON responses)</div></div>
+      <div class="tech-card"><div class="tech-icon">📐</div><div class="tech-name">Shapely</div><div class="tech-role">Geometry: create 500m circle buffers</div></div>
+      <div class="tech-card"><div class="tech-icon">🗺️</div><div class="tech-name">Google Places API</div><div class="tech-role">Live café data: names, ratings, types</div></div>
+      <div class="tech-card"><div class="tech-icon">🌍</div><div class="tech-name">Overpass API</div><div class="tech-role">OSM road network + amenity queries</div></div>
+    </div>
+
+    <div class="section-label">Machine Learning</div>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-icon">🌲</div><div class="tech-name">Scikit-learn</div><div class="tech-role">Random Forest classifier training & eval</div></div>
+      <div class="tech-card"><div class="tech-icon">🐼</div><div class="tech-name">Pandas</div><div class="tech-role">Data loading, cleaning, feature engineering</div></div>
+      <div class="tech-card"><div class="tech-icon">🔢</div><div class="tech-name">NumPy</div><div class="tech-role">Numerical arrays and matrix operations</div></div>
+      <div class="tech-card"><div class="tech-icon">💾</div><div class="tech-name">Joblib</div><div class="tech-role">Save & load trained .pkl model files</div></div>
+    </div>
+
+    <div class="section-label">Database</div>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-icon">🐘</div><div class="tech-name">PostgreSQL</div><div class="tech-role">Primary relational database</div></div>
+      <div class="tech-card"><div class="tech-icon">📍</div><div class="tech-name">PostGIS</div><div class="tech-role">Spatial extension: ST_DWithin, ST_MakePoint</div></div>
+      <div class="tech-card"><div class="tech-icon">🔗</div><div class="tech-name">psycopg2</div><div class="tech-role">Python ↔ PostgreSQL connector</div></div>
+    </div>
+
+    <div class="section-label">DevOps & Tools</div>
+    <div class="tech-grid">
+      <div class="tech-card"><div class="tech-icon">🐙</div><div class="tech-name">GitHub</div><div class="tech-role">Version control, collaboration</div></div>
+      <div class="tech-card"><div class="tech-icon">📬</div><div class="tech-name">Postman</div><div class="tech-role">API testing and documentation</div></div>
+      <div class="tech-card"><div class="tech-icon">🗺️</div><div class="tech-name">QGIS</div><div class="tech-role">Visualize & verify spatial data</div></div>
+      <div class="tech-card"><div class="tech-icon">☁️</div><div class="tech-name">Render / Railway</div><div class="tech-role">Cloud deployment (free tier available)</div></div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div id="timeline" class="panel">
+    <div class="section-label">8-Week Gantt Chart</div>
+    <div class="gantt-wrapper">
+      <table class="gantt-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;min-width:200px">Task</th>
+            <th>W1</th><th>W2</th><th>W3</th><th>W4</th><th>W5</th><th>W6</th><th>W7</th><th>W8</th>
+          </tr>
+        </thead>
+        <tbody id="ganttBody"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:24px;margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--muted);">
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--accent2);border-radius:2px;margin-right:6px;vertical-align:middle;opacity:0.8"></span>Active</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:var(--accent);border-radius:2px;margin-right:6px;vertical-align:middle;opacity:0.6"></span>Overlap / Partial</span>
+    </div>
+
+    <div style="margin-top:40px;">
+      <div class="section-label">Team Task Division (Suggested)</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:8px;padding:20px;">
+          <div style="font-weight:700;margin-bottom:8px;">Santosh (ACE079BCT059)</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;font-family:var(--mono);">
+            Backend API development<br>
+            Google OAuth integration<br>
+            Spatial feature extraction<br>
+            API endpoint testing
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent2);border-radius:8px;padding:20px;">
+          <div style="font-weight:700;margin-bottom:8px;">Sijan (ACE079BCT065)</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;font-family:var(--mono);">
+            Frontend / Leaflet map UI<br>
+            Results sidebar & dashboard<br>
+            API integration in JS<br>
+            UI/UX refinement
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:8px;padding:20px;">
+          <div style="font-weight:700;margin-bottom:8px;">Upendra (ACE079BCT077)</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;font-family:var(--mono);">
+            Data collection & scraping<br>
+            Database setup & PostGIS<br>
+            ML model training & eval<br>
+            Model deployment (.pkl)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note" style="margin-top:32px;">
+      ⚠️ <strong style="color:var(--text)">Critical path:</strong> Data collection (Week 2) → ML training (Week 4) → Integration (Week 6). Delay in data collection cascades to delay in ML training. Start scraping Google Places API in Week 1 alongside setup.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // TAB SWITCHING
+  function switchTab(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // TOGGLE ARCH DETAILS
+  function toggleDetails(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // STEP CHECKBOXES
+  function toggleCheck(el) {
+    el.classList.toggle('done');
+    el.textContent = el.classList.contains('done') ? '✓' : '';
+    updateCounter();
+  }
+
+  function updateCounter() {
+    const total = document.querySelectorAll('.step-check').length;
+    const done = document.querySelectorAll('.step-check.done').length;
+    document.getElementById('doneCount').textContent = done;
+    document.getElementById('totalCount').textContent = total;
+  }
+
+  // GANTT DATA
+  const ganttData = [
+    { name: 'Setup & Environment',     weeks: [1,0,0,0,0,0,0,0] },
+    { name: 'Data Collection',         weeks: [0.5,1,0,0,0,0,0,0] },
+    { name: 'Database Setup',          weeks: [0,1,0.5,0,0,0,0,0] },
+    { name: 'Backend API Dev',         weeks: [0,0,1,0.5,0,0,0,0] },
+    { name: 'ML Model Training',       weeks: [0,0,0,1,0.5,0,0,0] },
+    { name: 'Frontend Development',    weeks: [0,0,0.5,0,1,0.5,0,0] },
+    { name: 'Integration & Testing',   weeks: [0,0,0,0,0,1,1,0] },
+    { name: 'Deployment',              weeks: [0,0,0,0,0,0,0.5,1] },
+    { name: 'Documentation',           weeks: [0,0,0,0,0,0,0.5,1] },
+  ];
+
+  const tbody = document.getElementById('ganttBody');
+  ganttData.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="task-name">${row.name}</td>` +
+      row.weeks.map(w => {
+        const cls = w === 1 ? 'active' : w === 0.5 ? 'partial' : 'empty';
+        return `<td><div class="gantt-cell ${cls}"></div></td>`;
+      }).join('');
+    tbody.appendChild(tr);
+  });
+
+  // INIT COUNTER
+  updateCounter();
+
+  // USER FLOW render
+  const steps = ['Login', 'View Map', 'Select Café Type', 'Pin Location', 'View 500m Analysis', 'Get Recommendation'];
+  const flowEl = document.querySelector('.overview-grid').nextElementSibling.nextElementSibling;
+  // The inline template string rendering in overview already handles this
+
+</script>
+</body>
+</html>

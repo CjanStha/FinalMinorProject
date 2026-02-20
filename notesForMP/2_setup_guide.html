@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CafeLocate ML — Full Setup Guide</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #21262d;
+  --border: #30363d;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --accent3: #f78166;
+  --yellow: #e3b341;
+  --purple: #bc8cff;
+  --text: #e6edf3;
+  --muted: #7d8590;
+  --code-bg: #0d1117;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* LAYOUT */
+.app-layout { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 280px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.sidebar-logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.sidebar-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.sidebar-nav { padding: 12px 0; flex: 1; }
+
+.nav-section-label {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 20px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted);
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.nav-item:hover { color: var(--text); background: rgba(88,166,255,0.06); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,0.08); }
+.nav-item .nav-icon { font-size: 14px; width: 18px; flex-shrink: 0; }
+.nav-item .nav-num {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--muted);
+}
+
+/* MAIN CONTENT */
+.main-content {
+  margin-left: 280px;
+  flex: 1;
+  max-width: 900px;
+  padding: 48px 48px 120px;
+}
+
+/* SECTIONS */
+.section { margin-bottom: 80px; }
+.section-header { margin-bottom: 32px; }
+
+.section-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+
+.section-desc {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 640px;
+}
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 40px 0; }
+
+/* INFO BOXES */
+.info-box {
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 20px 0;
+  font-size: 13px;
+  line-height: 1.7;
+  display: flex;
+  gap: 12px;
+}
+.info-box .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.info-box.note { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.2); }
+.info-box.tip { background: rgba(63,185,80,0.08); border: 1px solid rgba(63,185,80,0.2); }
+.info-box.warn { background: rgba(227,179,65,0.08); border: 1px solid rgba(227,179,65,0.2); }
+.info-box.danger { background: rgba(247,129,102,0.08); border: 1px solid rgba(247,129,102,0.2); }
+.info-box strong { color: var(--text); }
+
+/* CODE BLOCKS */
+.code-block { margin: 20px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+
+.code-header {
+  background: var(--surface2);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.code-filename {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.code-filename .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.dot-red { background: #f78166; }
+.dot-yellow { background: #e3b341; }
+.dot-green { background: #3fb950; }
+
+.copy-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.copy-btn:hover { color: var(--text); border-color: var(--accent); }
+.copy-btn.copied { color: var(--accent2); border-color: var(--accent2); }
+
+.code-body {
+  background: var(--code-bg);
+  padding: 20px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  tab-size: 2;
+}
+
+/* SYNTAX HIGHLIGHTING */
+.kw { color: #ff7b72; }      /* keywords: import, def, class, if */
+.fn { color: #d2a8ff; }      /* functions */
+.str { color: #a5d6ff; }     /* strings */
+.cm { color: #8b949e; font-style: italic; } /* comments */
+.num { color: #79c0ff; }     /* numbers */
+.op { color: #ff7b72; }      /* operators */
+.var { color: #ffa657; }     /* variables/params */
+.cls { color: #f0883e; }     /* class names */
+.key { color: #79c0ff; }     /* dict keys, config keys */
+.punc { color: #e6edf3; }    /* brackets, colons */
+.cmd { color: #3fb950; }     /* terminal commands */
+.arg { color: #e3b341; }     /* command args / flags */
+.path { color: #a5d6ff; }    /* file paths */
+.env { color: #bc8cff; }     /* env variables */
+
+/* STEP BLOCKS */
+.step-block {
+  margin: 24px 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.step-head {
+  background: var(--surface);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.step-head:hover { background: var(--surface2); }
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.step-title { font-size: 15px; font-weight: 600; flex: 1; }
+.step-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 1px;
+}
+.badge-terminal { background: rgba(63,185,80,0.15); color: var(--accent2); border: 1px solid rgba(63,185,80,0.3); }
+.badge-file { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.3); }
+.badge-config { background: rgba(227,179,65,0.15); color: var(--yellow); border: 1px solid rgba(227,179,65,0.3); }
+.badge-concept { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+
+.step-chevron { color: var(--muted); font-size: 12px; transition: transform 0.2s; }
+.step-head.open .step-chevron { transform: rotate(90deg); }
+
+.step-body {
+  display: none;
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.step-body.open { display: block; }
+
+.explain-text {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+.explain-text strong { color: var(--text); }
+.explain-text code {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--yellow);
+}
+
+/* FOLDER TREE */
+.tree {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 2;
+  overflow-x: auto;
+}
+
+.tree-folder { color: var(--yellow); }
+.tree-file { color: var(--text); }
+.tree-comment { color: var(--muted); font-style: italic; margin-left: 8px; }
+.tree-line { color: var(--border); }
+.tree-important { color: var(--accent3); font-weight: 700; }
+
+/* INLINE CODE */
+code {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--yellow);
+}
+
+/* COMPARISON TABLE */
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 16px 0;
+}
+.comp-table th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.comp-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  line-height: 1.6;
+  vertical-align: top;
+}
+.comp-table td strong { color: var(--text); }
+
+/* PROGRESS TRACKER */
+.progress-bar-top {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--border);
+  z-index: 200;
+}
+.progress-bar-fill-top {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.1s;
+  width: 0%;
+}
+
+/* VERIFICATION CHECKLIST */
+.verify-list { margin: 16px 0; }
+.verify-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+}
+.verify-item:last-child { border-bottom: none; }
+.verify-check {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  margin-top: 1px;
+  transition: all 0.15s;
+}
+.verify-check.done { background: var(--accent2); border-color: var(--accent2); color: #000; }
+.verify-label { font-size: 13px; line-height: 1.5; }
+.verify-label code { font-size: 11px; }
+
+/* PILL TAGS */
+.pill {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin: 2px;
+  letter-spacing: 0.5px;
+}
+.pill-blue { background: rgba(88,166,255,0.15); color: var(--accent); }
+.pill-green { background: rgba(63,185,80,0.15); color: var(--accent2); }
+.pill-orange { background: rgba(247,129,102,0.15); color: var(--accent3); }
+.pill-yellow { background: rgba(227,179,65,0.15); color: var(--yellow); }
+.pill-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar { width: 100%; position: relative; height: auto; }
+  .main-content { margin-left: 0; padding: 24px 16px 80px; }
+  .app-layout { flex-direction: column; }
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ANIMATION */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section { animation: fadeSlide 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar-top"><div class="progress-bar-fill-top" id="progressFill"></div></div>
+
+<div class="app-layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">☕ CafeLocate ML</div>
+    <div class="sidebar-subtitle">Phase 1 — Setup Guide</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Getting Started</div>
+    <a class="nav-item active" href="#what-is-setup" onclick="setActive(this)">
+      <span class="nav-icon">🧠</span> What is "Setup"?
+    </a>
+    <a class="nav-item" href="#folder-structure" onclick="setActive(this)">
+      <span class="nav-icon">📁</span> Folder Structure
+    </a>
+
+    <div class="nav-section-label">Step-by-Step</div>
+    <a class="nav-item" href="#step-python" onclick="setActive(this)">
+      <span class="nav-icon">🐍</span> 1. Install Python
+      <span class="nav-num">S1</span>
+    </a>
+    <a class="nav-item" href="#step-venv" onclick="setActive(this)">
+      <span class="nav-icon">📦</span> 2. Virtual Env
+      <span class="nav-num">S2</span>
+    </a>
+    <a class="nav-item" href="#step-django" onclick="setActive(this)">
+      <span class="nav-icon">🎸</span> 3. Django Project
+      <span class="nav-num">S3</span>
+    </a>
+    <a class="nav-item" href="#step-postgres" onclick="setActive(this)">
+      <span class="nav-icon">🐘</span> 4. PostgreSQL
+      <span class="nav-num">S4</span>
+    </a>
+    <a class="nav-item" href="#step-postgis" onclick="setActive(this)">
+      <span class="nav-icon">📍</span> 5. PostGIS
+      <span class="nav-num">S5</span>
+    </a>
+    <a class="nav-item" href="#step-django-db" onclick="setActive(this)">
+      <span class="nav-icon">🔗</span> 6. Connect DB
+      <span class="nav-num">S6</span>
+    </a>
+    <a class="nav-item" href="#step-google" onclick="setActive(this)">
+      <span class="nav-icon">🔑</span> 7. Google API Keys
+      <span class="nav-num">S7</span>
+    </a>
+    <a class="nav-item" href="#step-env" onclick="setActive(this)">
+      <span class="nav-icon">🔒</span> 8. .env File
+      <span class="nav-num">S8</span>
+    </a>
+    <a class="nav-item" href="#step-git" onclick="setActive(this)">
+      <span class="nav-icon">🐙</span> 9. Git & GitHub
+      <span class="nav-num">S9</span>
+    </a>
+    <a class="nav-item" href="#step-verify" onclick="setActive(this)">
+      <span class="nav-icon">✅</span> 10. Verify All
+      <span class="nav-num">S10</span>
+    </a>
+
+    <div class="nav-section-label">How It Works</div>
+    <a class="nav-item" href="#how-pieces-connect" onclick="setActive(this)">
+      <span class="nav-icon">🔄</span> How Pieces Connect
+    </a>
+    <a class="nav-item" href="#run-project" onclick="setActive(this)">
+      <span class="nav-icon">🚀</span> Running the Project
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION: WHAT IS SETUP -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="what-is-setup">
+  <div class="section-header">
+    <div class="section-eyebrow">Phase 1 · Introduction</div>
+    <div class="section-title">What does "setup & environment" mean?</div>
+    <div class="section-desc">Before writing a single line of actual project code, you need to install the right tools and create a workspace. Think of it like a carpenter setting up their workshop before building furniture.</div>
+  </div>
+
+  <div class="info-box note">
+    <span class="icon">💡</span>
+    <div><strong>Analogy:</strong> Your project is like a restaurant kitchen. Before you cook (write code), you need the kitchen built (Python installed), the appliances in place (Django, PostgreSQL), a recipe book system (virtual environment), and a secure lockbox for secret ingredients (API keys). That's what this phase does.</div>
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);line-height:1.8;margin:16px 0;">Here's the big picture of what we're installing and <em>why</em>:</p>
+
+  <table class="comp-table">
+    <thead><tr><th>Tool</th><th>What it is</th><th>Why your project needs it</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Python 3.11</strong></td><td>Programming language</td><td>All backend logic, ML model, data processing</td></tr>
+      <tr><td><strong>pip</strong></td><td>Package installer for Python</td><td>Downloads libraries like Django, scikit-learn</td></tr>
+      <tr><td><strong>virtualenv</strong></td><td>Isolated Python workspace</td><td>Keeps this project's packages separate from other projects</td></tr>
+      <tr><td><strong>Django</strong></td><td>Python web framework</td><td>The backbone of your backend server and API</td></tr>
+      <tr><td><strong>PostgreSQL</strong></td><td>Database server</td><td>Stores cafés, roads, user data</td></tr>
+      <tr><td><strong>PostGIS</strong></td><td>Spatial extension for PostgreSQL</td><td>Enables "find all cafés within 500m" queries</td></tr>
+      <tr><td><strong>Git</strong></td><td>Version control</td><td>Track changes, collaborate with your team of 3</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box warn">
+    <span class="icon">⚠️</span>
+    <div><strong>Operating System:</strong> This guide assumes <strong>Windows 10/11</strong> with PowerShell or Command Prompt. Mac/Linux commands are slightly different — noted where relevant.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION: FOLDER STRUCTURE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="folder-structure">
+  <div class="section-header">
+    <div class="section-eyebrow">Professional Structure</div>
+    <div class="section-title">Full Project Folder Structure</div>
+    <div class="section-desc">This is the complete folder/file layout you'll build over all phases. It mirrors how real professional projects are organized. Set this up now so everything has a home from day one.</div>
+  </div>
+
+  <div class="info-box tip">
+    <span class="icon">✅</span>
+    <div><strong>Rule of thumb:</strong> Frontend code lives in <code>frontend/</code>, backend (Django) in <code>backend/</code>, ML scripts in <code>ml/</code>. They are three separate folders but share data through the API. You only create the <strong>highlighted files</strong> in Phase 1.</div>
+  </div>
+
+  <div class="tree">
+<span class="tree-folder">cafelocate/</span>                          <span class="tree-comment">← Root folder (your whole project lives here)</span>
+│
+├── <span class="tree-folder">backend/</span>                          <span class="tree-comment">← Django server + API + ML serving</span>
+│   ├── <span class="tree-folder">cafelocate/</span>                   <span class="tree-comment">← Django project settings package</span>
+│   │   ├── <span class="tree-important">__init__.py</span>
+│   │   ├── <span class="tree-important">settings.py</span>               <span class="tree-comment">← DB config, installed apps, keys</span>
+│   │   ├── <span class="tree-important">urls.py</span>                   <span class="tree-comment">← URL routing (which URL calls what)</span>
+│   │   └── <span class="tree-important">wsgi.py</span>                   <span class="tree-comment">← Production server entry point</span>
+│   │
+│   ├── <span class="tree-folder">api/</span>                          <span class="tree-comment">← Django app: REST API endpoints</span>
+│   │   ├── <span class="tree-important">models.py</span>                 <span class="tree-comment">← Database table definitions</span>
+│   │   ├── <span class="tree-important">views.py</span>                  <span class="tree-comment">← Logic for each API endpoint</span>
+│   │   ├── <span class="tree-important">serializers.py</span>            <span class="tree-comment">← Convert DB data → JSON</span>
+│   │   └── <span class="tree-important">urls.py</span>                   <span class="tree-comment">← API route definitions</span>
+│   │
+│   ├── <span class="tree-folder">ml_engine/</span>                    <span class="tree-comment">← Django app: serves ML predictions</span>
+│   │   ├── <span class="tree-important">predictor.py</span>              <span class="tree-comment">← Loads .pkl model, runs predictions</span>
+│   │   └── <span class="tree-important">views.py</span>                  <span class="tree-comment">← /api/predict/ endpoint</span>
+│   │
+│   ├── <span class="tree-important">manage.py</span>                     <span class="tree-comment">← Django management command runner</span>
+│   ├── <span class="tree-important">requirements.txt</span>              <span class="tree-comment">← List of all Python packages needed</span>
+│   └── <span class="tree-important">.env</span>                          <span class="tree-comment">← SECRET keys (never commit to git!)</span>
+│
+├── <span class="tree-folder">frontend/</span>                         <span class="tree-comment">← Map UI, HTML/CSS/JavaScript</span>
+│   ├── <span class="tree-important">index.html</span>                    <span class="tree-comment">← Login page</span>
+│   ├── <span class="tree-important">map.html</span>                      <span class="tree-comment">← Main map dashboard</span>
+│   ├── <span class="tree-folder">css/</span>
+│   │   └── <span class="tree-important">style.css</span>
+│   └── <span class="tree-folder">js/</span>
+│       ├── <span class="tree-important">map.js</span>                    <span class="tree-comment">← Leaflet map logic</span>
+│       ├── <span class="tree-important">auth.js</span>                   <span class="tree-comment">← Google sign-in logic</span>
+│       └── <span class="tree-important">api.js</span>                    <span class="tree-comment">← Calls to backend API</span>
+│
+├── <span class="tree-folder">ml/</span>                               <span class="tree-comment">← Standalone ML scripts (training)</span>
+│   ├── <span class="tree-important">collect_data.py</span>               <span class="tree-comment">← Scrapes Google Places API</span>
+│   ├── <span class="tree-important">preprocess.py</span>                 <span class="tree-comment">← Cleans data, builds feature matrix</span>
+│   ├── <span class="tree-important">train_model.py</span>                <span class="tree-comment">← Trains Random Forest, saves .pkl</span>
+│   ├── <span class="tree-important">evaluate.py</span>                   <span class="tree-comment">← Prints accuracy, F1-score report</span>
+│   └── <span class="tree-folder">models/</span>
+│       └── <span class="tree-important">rf_model.pkl</span>              <span class="tree-comment">← The trained model (binary file)</span>
+│
+├── <span class="tree-folder">data/</span>                             <span class="tree-comment">← Raw collected datasets</span>
+│   ├── <span class="tree-important">kathmandu_cafes.csv</span>
+│   ├── <span class="tree-important">kathmandu_roads.geojson</span>
+│   └── <span class="tree-important">kathmandu_census.csv</span>
+│
+├── <span class="tree-important">.gitignore</span>                        <span class="tree-comment">← Tells Git what NOT to track</span>
+├── <span class="tree-important">README.md</span>                         <span class="tree-comment">← Project description</span>
+└── <span class="tree-important">docker-compose.yml</span>                <span class="tree-comment">← (Optional) Run everything with one command</span>
+  </div>
+
+  <div class="info-box note">
+    <span class="icon">📌</span>
+    <div><strong>Phase 1 creates:</strong> The root <code>cafelocate/</code> folder, the entire <code>backend/</code> folder structure (via Django commands), and the <code>.gitignore</code>, <code>.env</code>, <code>requirements.txt</code>, and <code>README.md</code> files. You do NOT write any real feature code yet.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 1: PYTHON -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-python">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 1 of 10</div>
+    <div class="section-title">Install Python 3.11</div>
+    <div class="section-desc">Python is the programming language your entire backend and ML system is written in. Without it, nothing works.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Download & Install Python</div>
+      <span class="step-badge badge-concept">CONCEPT</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">Go to <strong>python.org/downloads</strong> and download <strong>Python 3.11.x</strong>. During installation, tick the box that says <strong>"Add Python to PATH"</strong> — this is critical. Without it, your terminal won't find Python.</p>
+      <div class="info-box warn">
+        <span class="icon">⚠️</span>
+        <div>Do <strong>NOT</strong> install Python 3.12+ yet. Some GIS libraries like GDAL have better compatibility with 3.11.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Verify Python installed correctly</div>
+      <span class="step-badge badge-terminal">TERMINAL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">Open <strong>PowerShell</strong> or <strong>Command Prompt</strong> (search "cmd" in Windows). Type these commands:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Terminal</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># Check Python version — should print Python 3.11.x</span>
+<span class="cmd">python --version</span>
+
+<span class="cm"># Check pip (Python package manager) — should print pip 23.x or higher</span>
+<span class="cmd">pip --version</span></div>
+      </div>
+      <div class="info-box tip">
+        <span class="icon">✅</span>
+        <div><strong>Expected output:</strong><br><code>Python 3.11.7</code><br><code>pip 23.3.1 from C:\Python311\Lib\site-packages\pip (python 3.11)</code></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 2: VIRTUAL ENV -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-venv">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 2 of 10</div>
+    <div class="section-title">Create Virtual Environment</div>
+    <div class="section-desc">A virtual environment is an isolated box of Python packages just for this project. It prevents conflicts between projects on the same computer.</div>
+  </div>
+
+  <div class="info-box note">
+    <span class="icon">💡</span>
+    <div><strong>Why virtual environments?</strong> Imagine you have two projects — one needs Django 4.2, another needs Django 3.2. Without a virtual environment, they'd conflict. With one, each project has its own private Django installation.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head open" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Create the project folder and virtual environment</div>
+      <span class="step-badge badge-terminal">TERMINAL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body open">
+      <p class="explain-text">Run these commands <strong>in order</strong>. Each line is explained below:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> PowerShell / CMD</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># 1. Go to your Desktop (or wherever you want the project)</span>
+<span class="cmd">cd</span> <span class="path">Desktop</span>
+
+<span class="cm"># 2. Create the root project folder</span>
+<span class="cmd">mkdir</span> <span class="path">cafelocate</span>
+
+<span class="cm"># 3. Enter the folder</span>
+<span class="cmd">cd</span> <span class="path">cafelocate</span>
+
+<span class="cm"># 4. Create a virtual environment called "venv" inside the project folder</span>
+<span class="cmd">python -m venv</span> <span class="arg">venv</span>
+
+<span class="cm"># 5. ACTIVATE the virtual environment (Windows)</span>
+<span class="cmd">venv\Scripts\activate</span>
+
+<span class="cm"># On Mac/Linux use this instead:</span>
+<span class="cm"># source venv/bin/activate</span>
+
+<span class="cm"># Your prompt should now show (venv) at the start — like this:</span>
+<span class="cm"># (venv) C:\Users\YourName\Desktop\cafelocate&gt;</span></div>
+      </div>
+      <div class="info-box tip">
+        <span class="icon">✅</span>
+        <div>The <code>(venv)</code> prefix in your terminal means the virtual environment is active. All <code>pip install</code> commands now go INSIDE this isolated environment, not globally.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Install all Python packages at once</div>
+      <span class="step-badge badge-terminal">TERMINAL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">First, create the <code>requirements.txt</code> file. This file lists every Python library your project needs. Think of it as a shopping list for pip.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> backend/requirements.txt</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># ── Web Framework ──────────────────────────────────────</span>
+<span class="key">Django</span>==<span class="num">4.2.13</span>
+<span class="key">djangorestframework</span>==<span class="num">3.15.1</span>       <span class="cm"># turns Django into an API server</span>
+<span class="key">django-cors-headers</span>==<span class="num">4.3.1</span>        <span class="cm"># allows frontend to call backend API</span>
+
+<span class="cm"># ── Database ───────────────────────────────────────────</span>
+<span class="key">psycopg2-binary</span>==<span class="num">2.9.9</span>             <span class="cm"># Python ↔ PostgreSQL connector</span>
+<span class="key">django-environ</span>==<span class="num">0.11.2</span>            <span class="cm"># reads .env file into Django settings</span>
+
+<span class="cm"># ── GIS / Spatial ──────────────────────────────────────</span>
+<span class="key">Shapely</span>==<span class="num">2.0.4</span>                     <span class="cm"># creates circle buffers in Python</span>
+<span class="key">geopy</span>==<span class="num">2.4.1</span>                       <span class="cm"># distance calculations</span>
+<span class="key">requests</span>==<span class="num">2.31.0</span>                   <span class="cm"># HTTP requests to Google/OSM APIs</span>
+
+<span class="cm"># ── Machine Learning ───────────────────────────────────</span>
+<span class="key">scikit-learn</span>==<span class="num">1.4.2</span>               <span class="cm"># Random Forest classifier</span>
+<span class="key">pandas</span>==<span class="num">2.2.2</span>                      <span class="cm"># data tables / CSV manipulation</span>
+<span class="key">numpy</span>==<span class="num">1.26.4</span>                      <span class="cm"># numerical arrays</span>
+<span class="key">joblib</span>==<span class="num">1.4.2</span>                      <span class="cm"># save/load trained model files</span>
+
+<span class="cm"># ── Auth ───────────────────────────────────────────────</span>
+<span class="key">google-auth</span>==<span class="num">2.29.0</span>               <span class="cm"># validate Google OAuth tokens</span>
+<span class="key">PyJWT</span>==<span class="num">2.8.0</span>                       <span class="cm"># create session tokens</span>
+
+<span class="cm"># ── Dev Tools ──────────────────────────────────────────</span>
+<span class="key">python-dotenv</span>==<span class="num">1.0.1</span>              <span class="cm"># load .env variables</span></div>
+      </div>
+
+      <p class="explain-text" style="margin-top:16px;">Now install everything from that file with one command:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Terminal (venv must be active)</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># Make sure (venv) is shown in your prompt first!</span>
+<span class="cm"># Navigate to where you'll put requirements.txt</span>
+<span class="cmd">cd</span> <span class="path">backend</span>
+
+<span class="cm"># Install all packages listed in requirements.txt</span>
+<span class="cmd">pip install -r</span> <span class="arg">requirements.txt</span>
+
+<span class="cm"># This will take 2-5 minutes — pip downloads everything from the internet</span>
+<span class="cm"># You'll see lots of "Downloading..." and "Installing..." messages — that's normal</span>
+
+<span class="cm"># Verify packages installed</span>
+<span class="cmd">pip list</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 3: DJANGO PROJECT -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-django">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 3 of 10</div>
+    <div class="section-title">Create the Django Project</div>
+    <div class="section-desc">Django is the Python web framework that handles your server, API routes, and database. One command creates the entire starting structure.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head open" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Generate the Django project and apps</div>
+      <span class="step-badge badge-terminal">TERMINAL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body open">
+      <p class="explain-text">Django organizes code into a <strong>project</strong> (overall settings) and <strong>apps</strong> (individual features). Your project has 2 apps: <code>api</code> (endpoints) and <code>ml_engine</code> (predictions).</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Terminal — run from cafelocate/backend/</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># Make sure you're inside the backend/ folder</span>
+<span class="cm"># cafelocate\backend&gt; (your prompt should look like this)</span>
+
+<span class="cm"># Create the Django project (the dot . means "create here, not in a sub-folder")</span>
+<span class="cmd">django-admin startproject</span> <span class="arg">cafelocate .</span>
+
+<span class="cm"># Create the "api" app (handles all REST API endpoints)</span>
+<span class="cmd">python manage.py startapp</span> <span class="arg">api</span>
+
+<span class="cm"># Create the "ml_engine" app (handles ML model predictions)</span>
+<span class="cmd">python manage.py startapp</span> <span class="arg">ml_engine</span>
+
+<span class="cm"># Also create the other folder structure manually</span>
+<span class="cmd">cd ..</span>                                    <span class="cm"># go back to cafelocate/ root</span>
+<span class="cmd">mkdir</span> <span class="path">frontend frontend\css frontend\js</span>
+<span class="cmd">mkdir</span> <span class="path">ml ml\models</span>
+<span class="cmd">mkdir</span> <span class="path">data</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Understand what Django generated</div>
+      <span class="step-badge badge-concept">CONCEPT</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">Django auto-generated several files. Here's what each one does:</p>
+      <table class="comp-table">
+        <thead><tr><th>File</th><th>Purpose</th><th>Will you edit it?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>manage.py</strong></td><td>Command runner — starts server, runs migrations, creates admin users</td><td>Never directly edit, only run it</td></tr>
+          <tr><td><strong>cafelocate/settings.py</strong></td><td>All configuration: installed apps, database, allowed hosts, secret key</td><td>Yes — frequently</td></tr>
+          <tr><td><strong>cafelocate/urls.py</strong></td><td>The URL router — says "when someone visits /api/cafes/, call this function"</td><td>Yes — add routes</td></tr>
+          <tr><td><strong>cafelocate/wsgi.py</strong></td><td>Entry point for production web server</td><td>Rarely</td></tr>
+          <tr><td><strong>api/models.py</strong></td><td>Define your database tables in Python</td><td>Yes — define Cafe, Ward tables</td></tr>
+          <tr><td><strong>api/views.py</strong></td><td>The logic that runs when someone hits an API endpoint</td><td>Yes — write endpoint logic</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(227,179,65,0.15);color:var(--yellow)">3</div>
+      <div class="step-title">Update settings.py — register your apps</div>
+      <span class="step-badge badge-config">CONFIG</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">Open <code>backend/cafelocate/settings.py</code> and find the <code>INSTALLED_APPS</code> list. Add your apps and new packages to it:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> backend/cafelocate/settings.py — INSTALLED_APPS section</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="var">INSTALLED_APPS</span> <span class="op">=</span> <span class="punc">[</span>
+    <span class="cm"># ── Django built-ins (keep these as-is) ──</span>
+    <span class="str">'django.contrib.admin'</span><span class="punc">,</span>
+    <span class="str">'django.contrib.auth'</span><span class="punc">,</span>
+    <span class="str">'django.contrib.contenttypes'</span><span class="punc">,</span>
+    <span class="str">'django.contrib.sessions'</span><span class="punc">,</span>
+    <span class="str">'django.contrib.messages'</span><span class="punc">,</span>
+    <span class="str">'django.contrib.staticfiles'</span><span class="punc">,</span>
+
+    <span class="cm"># ── Third-party packages we installed ──</span>
+    <span class="str">'rest_framework'</span><span class="punc">,</span>              <span class="cm"># djangorestframework</span>
+    <span class="str">'corsheaders'</span><span class="punc">,</span>                 <span class="cm"># django-cors-headers</span>
+
+    <span class="cm"># ── Your own apps ──</span>
+    <span class="str">'api'</span><span class="punc">,</span>                         <span class="cm"># the API endpoints app</span>
+    <span class="str">'ml_engine'</span><span class="punc">,</span>                   <span class="cm"># the ML prediction app</span>
+<span class="punc">]</span>
+
+<span class="cm"># ── Also add CORS settings (scroll down in settings.py) ──</span>
+<span class="cm"># This allows your HTML frontend to call the Django API</span>
+<span class="var">CORS_ALLOWED_ORIGINS</span> <span class="op">=</span> <span class="punc">[</span>
+    <span class="str">"http://localhost:5500"</span><span class="punc">,</span>       <span class="cm"># VS Code Live Server</span>
+    <span class="str">"http://127.0.0.1:5500"</span><span class="punc">,</span>
+<span class="punc">]</span>
+
+<span class="cm"># ── Add CORS middleware (find MIDDLEWARE list, add this as first item) ──</span>
+<span class="var">MIDDLEWARE</span> <span class="op">=</span> <span class="punc">[</span>
+    <span class="str">'corsheaders.middleware.CorsMiddleware'</span><span class="punc">,</span>  <span class="cm"># ← ADD THIS FIRST</span>
+    <span class="str">'django.middleware.security.SecurityMiddleware'</span><span class="punc">,</span>
+    <span class="cm"># ... rest stays the same</span>
+<span class="punc">]</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 4: POSTGRESQL -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-postgres">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 4 of 10</div>
+    <div class="section-title">Install PostgreSQL</div>
+    <div class="section-desc">PostgreSQL is the database that stores all your cafés, roads, and user data. It's like a supercharged Excel that your Python code can talk to.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head open" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Download and install PostgreSQL 16</div>
+      <span class="step-badge badge-concept">INSTALL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body open">
+      <p class="explain-text">Go to <strong>postgresql.org/download/windows</strong> → Download the installer for PostgreSQL 16. Run the installer:</p>
+      <div class="info-box note">
+        <span class="icon">📌</span>
+        <div>
+          During installation:<br>
+          • <strong>Password:</strong> Set a password for the <code>postgres</code> user — remember this! (use something like <code>admin123</code> for development)<br>
+          • <strong>Port:</strong> Leave as <code>5432</code> (default)<br>
+          • <strong>Stack Builder:</strong> When it asks to launch Stack Builder at the end → <strong>check YES</strong> — you need this for PostGIS<br>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Create the project database</div>
+      <span class="step-badge badge-terminal">TERMINAL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">After installing PostgreSQL, use <strong>pgAdmin 4</strong> (a visual tool installed alongside PostgreSQL) or the command line to create a database specifically for your project:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> SQL Shell (psql) — opens from Windows Start Menu</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm">-- When psql opens, press Enter to use default values for Server/Database/Port/Username</span>
+<span class="cm">-- Then enter your password when asked</span>
+
+<span class="cm">-- Create a new database for the project</span>
+<span class="kw">CREATE DATABASE</span> <span class="var">cafelocate_db</span><span class="punc">;</span>
+
+<span class="cm">-- Create a dedicated database user (more secure than using "postgres" user)</span>
+<span class="kw">CREATE USER</span> <span class="var">cafelocate_user</span> <span class="kw">WITH PASSWORD</span> <span class="str">'yourpassword123'</span><span class="punc">;</span>
+
+<span class="cm">-- Give the user full control over the database</span>
+<span class="kw">GRANT ALL PRIVILEGES ON DATABASE</span> <span class="var">cafelocate_db</span> <span class="kw">TO</span> <span class="var">cafelocate_user</span><span class="punc">;</span>
+
+<span class="cm">-- Quit psql</span>
+<span class="kw">\q</span></div>
+      </div>
+      <div class="info-box tip">
+        <span class="icon">💡</span>
+        <div>Alternatively, right-click "Databases" in pgAdmin 4 → Create → Database → name it <code>cafelocate_db</code>. pgAdmin is much more beginner-friendly if you prefer a visual interface.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 5: POSTGIS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-postgis">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 5 of 10</div>
+    <div class="section-title">Install PostGIS Extension</div>
+    <div class="section-desc">PostGIS adds spatial superpowers to PostgreSQL. Without it, your database can't understand GPS coordinates or answer queries like "find everything within 500m of this point."</div>
+  </div>
+
+  <div class="info-box note">
+    <span class="icon">🌍</span>
+    <div><strong>Why PostGIS?</strong> Normal SQL can compare numbers and text, but it has no concept of "distance." PostGIS adds geometry data types (POINT, POLYGON, LINESTRING) and spatial functions like <code>ST_DWithin</code> (within X meters) and <code>ST_MakePoint</code> (create a coordinate point).</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head open" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Install PostGIS via Stack Builder</div>
+      <span class="step-badge badge-concept">INSTALL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body open">
+      <p class="explain-text">If you checked "Launch Stack Builder" during PostgreSQL install, it opened automatically. If not, find Stack Builder in your Windows Start Menu.</p>
+      <div class="info-box note">
+        <span class="icon">📌</span>
+        <div>
+          In Stack Builder:<br>
+          1. Select your PostgreSQL 16 installation from dropdown<br>
+          2. Expand <strong>"Spatial Extensions"</strong><br>
+          3. Check <strong>"PostGIS 3.4 Bundle"</strong><br>
+          4. Click Next → it downloads and installs automatically<br>
+          5. When asked to create a spatial database, say <strong>Yes</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Enable PostGIS on your database</div>
+      <span class="step-badge badge-terminal">SQL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">PostGIS is installed on the server, but you must enable it for each specific database. Connect to your <code>cafelocate_db</code> and run:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> psql — connected to cafelocate_db</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm">-- Connect to your project database first</span>
+<span class="kw">\c</span> <span class="var">cafelocate_db</span>
+
+<span class="cm">-- Enable the PostGIS extension (this adds all spatial functions)</span>
+<span class="kw">CREATE EXTENSION IF NOT EXISTS</span> <span class="var">postgis</span><span class="punc">;</span>
+
+<span class="cm">-- Verify it worked — should return the PostGIS version</span>
+<span class="kw">SELECT</span> <span class="fn">PostGIS_version</span><span class="punc">();</span>
+
+<span class="cm">-- Expected output: "3.4 USE_GEOS=1 USE_PROJ=1 USE_STATS=1"</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 6: CONNECT DB TO DJANGO -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-django-db">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 6 of 10</div>
+    <div class="section-title">Connect Django to PostgreSQL</div>
+    <div class="section-desc">Tell Django where your database is and how to connect to it. This is done in settings.py.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head open" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Update DATABASES in settings.py</div>
+      <span class="step-badge badge-config">CONFIG</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body open">
+      <p class="explain-text">Find the <code>DATABASES</code> section in <code>settings.py</code> — it has a default SQLite config. Replace the entire thing with this PostgreSQL config:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> backend/cafelocate/settings.py — DATABASES section</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="kw">import</span> <span class="var">environ</span>
+<span class="kw">import</span> <span class="var">os</span>
+
+<span class="cm"># This reads values from the .env file (we create .env in Step 8)</span>
+<span class="var">env</span> <span class="op">=</span> <span class="fn">environ</span><span class="punc">.</span><span class="fn">Env</span><span class="punc">()</span>
+<span class="fn">environ</span><span class="punc">.</span><span class="fn">Env</span><span class="punc">.</span><span class="fn">read_env</span><span class="punc">(</span><span class="fn">os.path.join</span><span class="punc">(</span><span class="var">BASE_DIR</span><span class="punc">,</span> <span class="str">'.env'</span><span class="punc">))</span>
+
+<span class="cm"># ── Replace the old DATABASES dict with this ──────────────────────────</span>
+<span class="var">DATABASES</span> <span class="op">=</span> <span class="punc">{</span>
+    <span class="str">'default'</span><span class="punc">:</span> <span class="punc">{</span>
+        <span class="str">'ENGINE'</span><span class="punc">:</span> <span class="str">'django.contrib.gis.db.backends.postgis'</span><span class="punc">,</span>
+        <span class="cm">#           ↑ Use GIS backend (not just 'django.db.backends.postgresql')</span>
+        <span class="cm">#           This enables PostGIS spatial fields in Django models</span>
+        <span class="str">'NAME'</span><span class="punc">:</span>     <span class="fn">env</span><span class="punc">(</span><span class="str">'DB_NAME'</span><span class="punc">,</span>     <span class="arg">default</span><span class="op">=</span><span class="str">'cafelocate_db'</span><span class="punc">),</span>
+        <span class="str">'USER'</span><span class="punc">:</span>     <span class="fn">env</span><span class="punc">(</span><span class="str">'DB_USER'</span><span class="punc">,</span>     <span class="arg">default</span><span class="op">=</span><span class="str">'cafelocate_user'</span><span class="punc">),</span>
+        <span class="str">'PASSWORD'</span><span class="punc">:</span> <span class="fn">env</span><span class="punc">(</span><span class="str">'DB_PASSWORD'</span><span class="punc">,</span> <span class="arg">default</span><span class="op">=</span><span class="str">'yourpassword123'</span><span class="punc">),</span>
+        <span class="str">'HOST'</span><span class="punc">:</span>     <span class="fn">env</span><span class="punc">(</span><span class="str">'DB_HOST'</span><span class="punc">,</span>     <span class="arg">default</span><span class="op">=</span><span class="str">'localhost'</span><span class="punc">),</span>
+        <span class="str">'PORT'</span><span class="punc">:</span>     <span class="fn">env</span><span class="punc">(</span><span class="str">'DB_PORT'</span><span class="punc">,</span>     <span class="arg">default</span><span class="op">=</span><span class="str">'5432'</span><span class="punc">),</span>
+    <span class="punc">}</span>
+<span class="punc">}</span>
+
+<span class="cm"># ── Also add this near the top of settings.py ─────────────────────────</span>
+<span class="cm"># Needed for the GIS Django backend</span>
+<span class="str">'django.contrib.gis'</span>  <span class="cm"># add this to INSTALLED_APPS too!</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Run database migrations</div>
+      <span class="step-badge badge-terminal">TERMINAL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text"><strong>Migrations</strong> are how Django creates and updates your database tables. You run them whenever you change your models. Right now, they create Django's default tables (users, sessions, admin, etc.).</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Terminal — inside backend/ folder, venv active</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># Apply all migrations — creates tables in cafelocate_db</span>
+<span class="cmd">python manage.py migrate</span>
+
+<span class="cm"># Expected output (you'll see a list of migrations applying):</span>
+<span class="cm"># Operations to perform:</span>
+<span class="cm">#   Apply all migrations: admin, auth, contenttypes, sessions</span>
+<span class="cm"># Running migrations:</span>
+<span class="cm">#   Applying contenttypes.0001_initial... OK</span>
+<span class="cm">#   Applying auth.0001_initial... OK</span>
+<span class="cm">#   ... (many more OK lines)</span>
+
+<span class="cm"># Test that the Django server starts successfully</span>
+<span class="cmd">python manage.py runserver</span>
+
+<span class="cm"># Visit http://127.0.0.1:8000/ in your browser</span>
+<span class="cm"># You should see the Django "rocket" welcome page</span>
+<span class="cm"># Press Ctrl+C to stop the server</span></div>
+      </div>
+      <div class="info-box tip">
+        <span class="icon">✅</span>
+        <div>If you see <strong>"The install worked successfully! Congratulations!"</strong> at <code>http://127.0.0.1:8000/</code>, Django is correctly connected to PostgreSQL.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 7: GOOGLE API -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-google">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 7 of 10</div>
+    <div class="section-title">Get Google API Keys</div>
+    <div class="section-desc">Your project needs two Google services: Places API (to get café data) and OAuth 2.0 (for user login). Both require keys from Google Cloud Console.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head open" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Create a Google Cloud Project</div>
+      <span class="step-badge badge-concept">CLOUD</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body open">
+      <div class="info-box note">
+        <span class="icon">📌</span>
+        <div>
+          <strong>Step-by-step on Google Cloud Console (console.cloud.google.com):</strong><br><br>
+          1. Sign in with your Google account<br>
+          2. Click <strong>"Select a project"</strong> → <strong>"New Project"</strong><br>
+          3. Name it <strong>"CafeLocate ML"</strong> → Create<br>
+          4. In the left menu → <strong>APIs & Services → Library</strong><br>
+          5. Search and enable: <strong>"Places API"</strong> → Enable<br>
+          6. Search and enable: <strong>"Maps JavaScript API"</strong> → Enable<br>
+          7. Go to <strong>APIs & Services → Credentials</strong><br>
+          8. Click <strong>"+ Create Credentials" → API key</strong><br>
+          9. Copy the key — this is your <code>GOOGLE_PLACES_API_KEY</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Set up OAuth 2.0 for Google Sign-In</div>
+      <span class="step-badge badge-concept">CLOUD</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <div class="info-box note">
+        <span class="icon">📌</span>
+        <div>
+          <strong>Still in Google Cloud Console:</strong><br><br>
+          1. APIs & Services → <strong>OAuth consent screen</strong><br>
+          2. Choose <strong>External</strong> → Create<br>
+          3. Fill: App name = "CafeLocate ML", user support email = your email<br>
+          4. Save and continue<br>
+          5. Go to <strong>Credentials → + Create Credentials → OAuth client ID</strong><br>
+          6. Application type: <strong>Web application</strong><br>
+          7. Authorized origins: add <code>http://localhost:5500</code> and <code>http://127.0.0.1:8000</code><br>
+          8. Create → copy the <strong>Client ID</strong> — this is your <code>GOOGLE_CLIENT_ID</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 8: .ENV FILE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-env">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 8 of 10</div>
+    <div class="section-title">Create the .env File</div>
+    <div class="section-desc">The .env file stores all secret values — API keys, database passwords, etc. It is NEVER committed to Git. Each team member creates their own copy.</div>
+  </div>
+
+  <div class="info-box danger">
+    <span class="icon">🚫</span>
+    <div><strong>Never put secret keys directly in settings.py.</strong> If you push settings.py to GitHub, your API key is exposed to the entire internet. The .env file stays on your machine only.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head open" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Create backend/.env</div>
+      <span class="step-badge badge-file">FILE</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body open">
+      <p class="explain-text">Create a file named exactly <code>.env</code> (with the dot, no extension) inside the <code>backend/</code> folder. Fill in your actual values:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> backend/.env</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># ── Django ─────────────────────────────────────────────────────────</span>
+<span class="env">SECRET_KEY</span>=<span class="str">django-insecure-replace-this-with-a-long-random-string-xyz123abc</span>
+<span class="env">DEBUG</span>=<span class="str">True</span>
+<span class="env">ALLOWED_HOSTS</span>=<span class="str">localhost,127.0.0.1</span>
+
+<span class="cm"># ── Database ───────────────────────────────────────────────────────</span>
+<span class="env">DB_NAME</span>=<span class="str">cafelocate_db</span>
+<span class="env">DB_USER</span>=<span class="str">cafelocate_user</span>
+<span class="env">DB_PASSWORD</span>=<span class="str">yourpassword123</span>
+<span class="env">DB_HOST</span>=<span class="str">localhost</span>
+<span class="env">DB_PORT</span>=<span class="str">5432</span>
+
+<span class="cm"># ── Google APIs ────────────────────────────────────────────────────</span>
+<span class="env">GOOGLE_PLACES_API_KEY</span>=<span class="str">AIzaSy_your_actual_key_here</span>
+<span class="env">GOOGLE_CLIENT_ID</span>=<span class="str">123456789-abcdefg.apps.googleusercontent.com</span>
+<span class="env">GOOGLE_CLIENT_SECRET</span>=<span class="str">GOCSPX-your_client_secret_here</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Create .env.example (for teammates)</div>
+      <span class="step-badge badge-file">FILE</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">Create a <code>.env.example</code> file with the same structure but <strong>empty values</strong>. This gets committed to Git so teammates know what variables to set up.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> backend/.env.example  ← This one IS committed to Git</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="env">SECRET_KEY</span>=<span class="cm">your-django-secret-key-here</span>
+<span class="env">DEBUG</span>=<span class="str">True</span>
+<span class="env">ALLOWED_HOSTS</span>=<span class="str">localhost,127.0.0.1</span>
+
+<span class="env">DB_NAME</span>=<span class="cm">your_database_name</span>
+<span class="env">DB_USER</span>=<span class="cm">your_database_user</span>
+<span class="env">DB_PASSWORD</span>=<span class="cm">your_database_password</span>
+<span class="env">DB_HOST</span>=<span class="str">localhost</span>
+<span class="env">DB_PORT</span>=<span class="str">5432</span>
+
+<span class="env">GOOGLE_PLACES_API_KEY</span>=<span class="cm">get-from-google-cloud-console</span>
+<span class="env">GOOGLE_CLIENT_ID</span>=<span class="cm">get-from-google-cloud-console</span>
+<span class="env">GOOGLE_CLIENT_SECRET</span>=<span class="cm">get-from-google-cloud-console</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 9: GIT -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-git">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 9 of 10</div>
+    <div class="section-title">Set Up Git & GitHub</div>
+    <div class="section-desc">Git lets your team of 3 work on the same code without overwriting each other's work. GitHub is where you store the code online.</div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head open" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(88,166,255,0.15);color:var(--accent)">1</div>
+      <div class="step-title">Install Git and configure it</div>
+      <span class="step-badge badge-terminal">TERMINAL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body open">
+      <p class="explain-text">Download Git from <strong>git-scm.com</strong>. Install with all defaults. Then tell Git who you are:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Terminal</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># Tell Git your name and email (use your GitHub account email)</span>
+<span class="cmd">git config --global user.name</span> <span class="str">"Santosh Mahato Koiri"</span>
+<span class="cmd">git config --global user.email</span> <span class="str">"your@email.com"</span>
+
+<span class="cm"># Verify</span>
+<span class="cmd">git config --list</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(63,185,80,0.15);color:var(--accent2)">2</div>
+      <div class="step-title">Create the .gitignore file</div>
+      <span class="step-badge badge-file">FILE</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">Create <code>.gitignore</code> in the ROOT <code>cafelocate/</code> folder. This tells Git to <strong>ignore</strong> these files/folders — they should never go to GitHub.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> cafelocate/.gitignore</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># ── Python ──────────────────────────────────</span>
+<span class="path">__pycache__/</span>
+<span class="path">*.py[cod]</span>
+<span class="path">*.pyo</span>
+<span class="path">*.pyd</span>
+<span class="path">.Python</span>
+
+<span class="cm"># ── Virtual Environment ──────────────────────</span>
+<span class="path">venv/</span>
+<span class="path">env/</span>
+<span class="path">.venv/</span>
+
+<span class="cm"># ── Environment Variables (NEVER commit these!) ──</span>
+<span class="path">.env</span>
+<span class="path">*.env</span>
+
+<span class="cm"># ── Django ──────────────────────────────────</span>
+<span class="path">*.log</span>
+<span class="path">*.pot</span>
+<span class="path">db.sqlite3</span>
+<span class="path">media/</span>
+
+<span class="cm"># ── ML Model files (large binary files) ─────</span>
+<span class="path">ml/models/*.pkl</span>
+<span class="path">*.pkl</span>
+
+<span class="cm"># ── Data files (can be huge) ─────────────────</span>
+<span class="path">data/*.csv</span>
+<span class="path">data/*.geojson</span>
+
+<span class="cm"># ── OS files ────────────────────────────────</span>
+<span class="path">.DS_Store</span>
+<span class="path">Thumbs.db</span>
+
+<span class="cm"># ── IDE files ───────────────────────────────</span>
+<span class="path">.vscode/</span>
+<span class="path">.idea/</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-block">
+    <div class="step-head" onclick="toggleStep(this)">
+      <div class="step-num" style="background:rgba(227,179,65,0.15);color:var(--yellow)">3</div>
+      <div class="step-title">Initialize repo and push to GitHub</div>
+      <span class="step-badge badge-terminal">TERMINAL</span>
+      <span class="step-chevron">▶</span>
+    </div>
+    <div class="step-body">
+      <p class="explain-text">Go to <strong>github.com</strong> → New Repository → name it <code>cafelocate-ml</code> → Create (don't add README, we'll push our own). Then in terminal:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Terminal — from cafelocate/ root folder</span>
+          <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        </div>
+        <div class="code-body"><span class="cm"># Initialize a Git repository</span>
+<span class="cmd">git init</span>
+
+<span class="cm"># Add all files to staging (except those in .gitignore)</span>
+<span class="cmd">git add .</span>
+
+<span class="cm"># Create the first commit</span>
+<span class="cmd">git commit -m</span> <span class="str">"Initial project structure — Phase 1 setup"</span>
+
+<span class="cm"># Connect to your GitHub repo (replace with your actual repo URL)</span>
+<span class="cmd">git remote add origin</span> <span class="path">https://github.com/yourusername/cafelocate-ml.git</span>
+
+<span class="cm"># Push to GitHub</span>
+<span class="cmd">git push -u origin main</span>
+
+<span class="cm"># ── Branch strategy for team of 3 ──────────────────────────────────
+# Each person creates a branch for their feature:</span>
+<span class="cmd">git checkout -b</span> <span class="arg">feature/backend-api</span>      <span class="cm"># Santosh</span>
+<span class="cmd">git checkout -b</span> <span class="arg">feature/frontend-map</span>     <span class="cm"># Sijan</span>
+<span class="cmd">git checkout -b</span> <span class="arg">feature/ml-model</span>         <span class="cm"># Upendra</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- STEP 10: VERIFY -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="step-verify">
+  <div class="section-header">
+    <div class="section-eyebrow">Step 10 of 10</div>
+    <div class="section-title">Final Verification Checklist</div>
+    <div class="section-desc">Tick every box below before moving to Phase 2. If any box fails, go back to that step.</div>
+  </div>
+
+  <div class="verify-list">
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>Python works:</strong> <code>python --version</code> shows 3.11.x</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>pip works:</strong> <code>pip --version</code> shows pip 23.x or higher</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>Virtual env active:</strong> Terminal prompt shows <code>(venv)</code> prefix</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>All packages installed:</strong> <code>pip list</code> shows Django, scikit-learn, psycopg2, etc.</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>Django project exists:</strong> <code>backend/manage.py</code> file is there</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>PostgreSQL running:</strong> Can connect via pgAdmin or psql</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>Database created:</strong> <code>cafelocate_db</code> exists in PostgreSQL</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>PostGIS enabled:</strong> <code>SELECT PostGIS_version();</code> returns a version string</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>Django connects to DB:</strong> <code>python manage.py migrate</code> runs without errors</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>Server starts:</strong> <code>python manage.py runserver</code> → see rocket page at localhost:8000</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>.env file exists:</strong> <code>backend/.env</code> has all keys filled in</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>Git initialized:</strong> <code>git status</code> works from root folder</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>GitHub repo exists:</strong> Code is visible on github.com</div></div>
+    <div class="verify-item"><div class="verify-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div><div class="verify-label"><strong>.gitignore works:</strong> <code>.env</code> and <code>venv/</code> are NOT shown in <code>git status</code></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- HOW PIECES CONNECT -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="how-pieces-connect">
+  <div class="section-header">
+    <div class="section-eyebrow">Architecture</div>
+    <div class="section-title">How All the Pieces Connect</div>
+    <div class="section-desc">Here's exactly how data flows from a user clicking the map to getting a café recommendation — tracing through every layer you just set up.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Data Flow Diagram</span>
+    </div>
+    <div class="code-body"><span class="cm">┌─────────────────────────────────────────────────────────────────┐</span>
+<span class="cm">│                     USER'S BROWSER                              │</span>
+<span class="cm">│   frontend/map.html + js/map.js (Leaflet.js)                    │</span>
+<span class="cm">│                                                                  │</span>
+<span class="cm">│   User clicks map → lat/lng captured → dropdown café type       │</span>
+<span class="cm">│   → button "Analyze" clicked                                     │</span>
+<span class="cm">└──────────────────────────────┬──────────────────────────────────┘</span>
+                               <span class="cm">│  HTTP POST request</span>
+                               <span class="cm">│  { lat: 27.71, lng: 85.32, cafe_type: "bakery" }</span>
+                               <span class="cm">▼</span>
+<span class="cm">┌─────────────────────────────────────────────────────────────────┐</span>
+<span class="cm">│                  DJANGO BACKEND (port 8000)                      │</span>
+<span class="cm">│   backend/cafelocate/urls.py  → routes to api/views.py          │</span>
+<span class="cm">│                                                                  │</span>
+<span class="cm">│   api/views.py:                                                  │</span>
+<span class="cm">│     1. Validates request                                         │</span>
+<span class="cm">│     2. Calls GIS module → runs PostGIS query                     │</span>
+<span class="cm">│     3. Extracts features (competitor count, road length, pop)    │</span>
+<span class="cm">│     4. Calls ml_engine → gets prediction                        │</span>
+<span class="cm">│     5. Returns JSON response                                     │</span>
+<span class="cm">└────────────┬────────────────────────────┬────────────────────────┘</span>
+             <span class="cm">│                            │</span>
+             <span class="cm">│ SQL query                  │ feature vector</span>
+             <span class="cm">▼                            ▼</span>
+<span class="cm">┌────────────────────┐    ┌────────────────────────────────────────┐</span>
+<span class="cm">│  PostgreSQL +      │    │   ml_engine/predictor.py               │</span>
+<span class="cm">│  PostGIS           │    │                                         │</span>
+<span class="cm">│                    │    │   Loads rf_model.pkl                    │</span>
+<span class="cm">│  ST_DWithin(       │    │   model.predict([[8, 4.2, 1200, 3500]]) │</span>
+<span class="cm">│    cafe.geom,      │    │   → returns "Bakery Café" + 87%        │</span>
+<span class="cm">│    point, 500m     │    │                                         │</span>
+<span class="cm">│  ) → returns rows  │    └────────────────────────────────────────┘</span>
+<span class="cm">│                    │</span>
+<span class="cm">│  Tables:           │</span>
+<span class="cm">│  - cafes (POINT)   │</span>
+<span class="cm">│  - roads (LINE)    │</span>
+<span class="cm">│  - wards (POLYGON) │</span>
+<span class="cm">└────────────────────┘</span>
+             <span class="cm">│</span>
+             <span class="cm">└──────────────────── JSON response back to browser</span>
+                          <span class="cm">{ top5: [...], prediction: "Bakery Café" }</span>
+                                 <span class="cm">↓</span>
+                    <span class="cm">Leaflet map updates markers + sidebar shows results</span></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- RUNNING THE PROJECT -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="section" id="run-project">
+  <div class="section-header">
+    <div class="section-eyebrow">Daily Workflow</div>
+    <div class="section-title">How to Run the Full Project</div>
+    <div class="section-desc">Every time you start working, you need to start the right services. Here's the exact sequence.</div>
+  </div>
+
+  <div class="info-box note">
+    <span class="icon">📌</span>
+    <div>You need <strong>3 things running simultaneously</strong> during development: PostgreSQL (running as a Windows service — starts automatically), the Django server, and a local HTTP server for the frontend.</div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Terminal 1 — Django Backend Server</span>
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+    </div>
+    <div class="code-body"><span class="cm"># Every time you open a new terminal, activate venv first</span>
+<span class="cmd">cd</span> <span class="path">Desktop\cafelocate\backend</span>
+<span class="cmd">venv\Scripts\activate</span>
+
+<span class="cm"># Start the Django development server</span>
+<span class="cmd">python manage.py runserver</span>
+
+<span class="cm"># Server runs at: http://127.0.0.1:8000/</span>
+<span class="cm"># Keep this terminal open — don't close it</span></div>
+  </div>
+
+  <div class="code-block" style="margin-top:16px;">
+    <div class="code-header">
+      <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Terminal 2 — Frontend (VS Code Live Server)</span>
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+    </div>
+    <div class="code-body"><span class="cm"># Option A: Install VS Code → Install "Live Server" extension</span>
+<span class="cm"># Right-click frontend/map.html → "Open with Live Server"</span>
+<span class="cm"># Frontend runs at: http://127.0.0.1:5500/map.html</span>
+
+<span class="cm"># Option B: Use Python's built-in HTTP server</span>
+<span class="cmd">cd</span> <span class="path">Desktop\cafelocate\frontend</span>
+<span class="cmd">python -m http.server</span> <span class="arg">5500</span>
+<span class="cm"># Visit: http://localhost:5500/map.html</span></div>
+  </div>
+
+  <div class="info-box tip">
+    <span class="icon">🚀</span>
+    <div><strong>What you'll see:</strong> The Django backend handles API calls at <code>:8000</code>. The frontend loads the map at <code>:5500</code>. When the map makes an API call, it goes: <code>browser → :5500 → JS fetch → :8000/api/... → PostgreSQL → response → map updates</code>.</div>
+  </div>
+
+  <div class="code-block" style="margin-top:16px;">
+    <div class="code-header">
+      <span class="code-filename"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span> Team Git Workflow — Do This Every Day</span>
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+    </div>
+    <div class="code-body"><span class="cm"># ── START OF DAY ────────────────────────────────────────────────</span>
+<span class="cm"># Pull latest changes from teammates</span>
+<span class="cmd">git pull origin main</span>
+
+<span class="cm"># Switch to your feature branch</span>
+<span class="cmd">git checkout</span> <span class="arg">feature/backend-api</span>   <span class="cm"># use your own branch name</span>
+
+<span class="cm"># Merge any new main changes into your branch</span>
+<span class="cmd">git merge main</span>
+
+<span class="cm"># ── END OF DAY ──────────────────────────────────────────────────</span>
+<span class="cm"># Stage your changes</span>
+<span class="cmd">git add .</span>
+
+<span class="cm"># Commit with a descriptive message</span>
+<span class="cmd">git commit -m</span> <span class="str">"Add /api/cafes/nearby/ endpoint with 500m buffer query"</span>
+
+<span class="cm"># Push your branch</span>
+<span class="cmd">git push origin</span> <span class="arg">feature/backend-api</span>
+
+<span class="cm"># When feature is done → create a Pull Request on GitHub</span>
+<span class="cm"># Team reviews → merge into main</span></div>
+  </div>
+
+  <div class="info-box tip">
+    <span class="icon">✅</span>
+    <div><strong>Phase 1 is complete.</strong> You now have: Python + venv + all packages installed, Django project with 2 apps scaffolded, PostgreSQL + PostGIS database created and connected, all API keys secured in .env, and the full folder structure in place. Phase 2 begins data collection.</div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+// SIDEBAR ACTIVE STATE
+function setActive(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// STEP TOGGLE
+function toggleStep(head) {
+  const body = head.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  head.classList.toggle('open');
+}
+
+// COPY CODE
+function copyCode(btn) {
+  const code = btn.closest('.code-block').querySelector('.code-body');
+  const text = code.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// SCROLL PROGRESS
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = (scrollTop / docHeight) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Update active nav based on scroll
+  const sections = document.querySelectorAll('.section');
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    if (n.getAttribute('href') === '#' + current) n.classList.add('active');
+  });
+});
+
+// Open first step in each section by default
+document.querySelectorAll('.step-head.open').forEach(h => {
+  h.nextElementSibling.classList.add('open');
+});
+</script>
+</body>
+</html>
