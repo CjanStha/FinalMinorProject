@@ -1,10 +1,10 @@
-from django.contrib.gis import admin  # GIS admin (not regular admin)
+from django.contrib import admin  # Temporarily changed from GIS admin due to GDAL issues
 from .models import Cafe, Ward, Road, UserProfile
 
 
 # Register Cafe with a customized display
 @admin.register(Cafe)
-class CafeAdmin(admin.GeoModelAdmin):  # GeoModelAdmin shows map widget
+class CafeAdmin(admin.ModelAdmin):  # Temporarily changed from GeoModelAdmin
     # Columns shown in the list view
     list_display  = ['name', 'cafe_type', 'rating', 'review_count', 'is_open']
     # Filter sidebar options
@@ -16,7 +16,7 @@ class CafeAdmin(admin.GeoModelAdmin):  # GeoModelAdmin shows map widget
 
 
 @admin.register(Ward)
-class WardAdmin(admin.GeoModelAdmin):
+class WardAdmin(admin.ModelAdmin):  # Temporarily changed from GeoModelAdmin
     list_display  = ['ward_number', 'population', 'area_sqkm', 'population_density']
     ordering      = ['ward_number']
 

@@ -1,6 +1,5 @@
-from django.contrib.gis.db import models
-#   ↑ Use GIS models (not regular django.db.models)
-#     This gives us PointField, PolygonField, etc.
+from django.db import models
+# from django.contrib.gis.db import models  # Temporarily disabled due to GDAL installation issues on Windows
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -26,7 +25,8 @@ class Cafe(models.Model):
     # srid=4326 means WGS84 coordinate system (standard GPS coordinates)
     # This field enables spatial queries like ST_DWithin()
     # null=True because we might add data without geometry first
-    location     = models.PointField(srid=4326, null=True, blank=True)
+    # Temporarily changed to CharField due to GDAL issues
+    location     = models.CharField(max_length=255, null=True, blank=True)
 
     # Rating 1.0–5.0 from Google
     rating       = models.FloatField(null=True, blank=True)
@@ -66,7 +66,8 @@ class Ward(models.Model):
 
     # The actual boundary polygon of this ward
     # MultiPolygonField handles wards with non-contiguous boundaries
-    boundary          = models.MultiPolygonField(srid=4326, null=True)
+    # Temporarily changed to TextField due to GDAL issues
+    boundary          = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = 'wards'
@@ -86,7 +87,8 @@ class Road(models.Model):
     # Type: "primary", "secondary", "residential", "footway", etc.
     road_type   = models.CharField(max_length=50, blank=True)
     # The road geometry as a line
-    geometry    = models.LineStringField(srid=4326)
+    # Temporarily changed to TextField due to GDAL issues
+    geometry    = models.TextField()
 
     class Meta:
         db_table = 'roads'
