@@ -50,6 +50,10 @@ pyproj==3.6.1
 # Used in ML pipeline for spatial joins (census data + ward boundaries)
 geopandas==0.14.4
 
+# psycopg2-binary: PostgreSQL adapter for Python
+# Required for PostgreSQL database connections in Docker
+psycopg2-binary==2.9.9
+
 
 # ── 4. HTTP / API REQUESTS ─────────────────────────────────────────
 # requests: makes HTTP calls to Google Places API and Overpass (OSM) API

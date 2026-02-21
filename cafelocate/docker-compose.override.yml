@@ -1,0 +1,33 @@
+version: '3.8'
+
+# Override file for development environment
+# This file is automatically merged with docker-compose.yml
+
+services:
+  backend:
+    # Mount the entire project for development
+    volumes:
+      - ./:/app
+      - /app/__pycache__  # Exclude cache from mounting
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-dev-key-for-development-only
+    # Override command to keep container running for development
+    command: tail -f /dev/null  # Keeps container alive for development
+
+  db:
+    # Expose port for local database access
+    ports:
+      - "5432:5432"
+
+  # Development-specific service: Adminer (lightweight database management)
+  adminer:
+    image: adminer:latest
+    container_name: cafelocate-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - cafelocate-network

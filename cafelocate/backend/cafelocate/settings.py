@@ -93,13 +93,22 @@ WSGI_APPLICATION = 'cafelocate.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        #           ↑ Temporarily using SQLite for testing until PostgreSQL is set up
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Use DATABASE_URL from environment, fallback to SQLite for development
+DATABASE_URL = env('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.sqlite3"}')
+
+if DATABASE_URL.startswith('postgresql://'):
+    # PostgreSQL configuration
+    DATABASES = {
+        'default': env.db_url('DATABASE_URL')
     }
-}
+else:
+    # SQLite configuration (development fallback)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation

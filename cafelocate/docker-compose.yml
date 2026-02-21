@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Django Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cafelocate-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+      - ./ml:/app/ml
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-dev-key-change-in-production
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+      - DATABASE_URL=postgresql://cafelocate_user:cafelocate_password@db:5432/cafelocate_db
+      - CORS_ALLOWED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
+    depends_on:
+      - db
+    networks:
+      - cafelocate-network
+    command: python manage.py runserver 0.0.0.0:8000
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: cafelocate-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=cafelocate_db
+      - POSTGRES_USER=cafelocate_user
+      - POSTGRES_PASSWORD=cafelocate_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db.sqlite3:/app/db.sqlite3  # Mount existing SQLite for migration
+    ports:
+      - "5432:5432"
+    networks:
+      - cafelocate-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cafelocate_user -d cafelocate_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (Optional - for caching and sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: cafelocate-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - cafelocate-network
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+  # PgAdmin (Optional - Database management interface)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: cafelocate-pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@cafelocate.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - cafelocate-network
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  redis_data:
+  pgadmin_data:
+
+networks:
+  cafelocate-network:
+    driver: bridge
