@@ -1,0 +1,12 @@
+feature,importance
+foot_traffic_score,0.28843894743874504
+population_density_proxy,0.25514630548919887
+schools_within_500m,0.1493895790017031
+schools_min_distance,0.12152916023600951
+hospitals_within_500m,0.038178802410098425
+accessibility_score,0.03743591454548093
+roads_avg_distance,0.03737677773859798
+hospitals_min_distance,0.03477275141357337
+roads_within_500m,0.021179535500875278
+competitors_min_distance,0.012589589659400064
+schools_within_200m,0.003962636566317425
