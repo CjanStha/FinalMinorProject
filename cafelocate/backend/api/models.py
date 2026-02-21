@@ -98,7 +98,35 @@ from django.db import models
 
 
 # ═══════════════════════════════════════════════════════════════════
-# TABLE 4: UserProfile
+# TABLE 4: Amenity
+# OpenStreetMap amenities: schools, hospitals, bus stops, etc.
+# ═══════════════════════════════════════════════════════════════════
+class Amenity(models.Model):
+
+    osm_id        = models.BigIntegerField(unique=True)
+    amenity_type  = models.CharField(max_length=100)  # "school", "hospital", "bus_station", etc.
+    name          = models.CharField(max_length=255, null=True, blank=True)
+    latitude      = models.FloatField()
+    longitude     = models.FloatField()
+
+    # GeoJSON point: {'type': 'Point', 'coordinates': [lng, lat]}
+    location      = models.JSONField(null=True, blank=True)
+
+    created_at    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'amenities'
+        indexes = [
+            models.Index(fields=['amenity_type']),
+            models.Index(fields=['latitude', 'longitude']),
+        ]
+
+    def __str__(self):
+        return f"{self.amenity_type}: {self.name or 'Unnamed'}"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TABLE 5: UserProfile
 # Custom user model with username, email, password authentication
 # ═══════════════════════════════════════════════════════════════════
 class UserProfile(AbstractUser):

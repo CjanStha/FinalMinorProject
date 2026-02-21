@@ -12,6 +12,8 @@ class MapManager {
         this.analysisRadius = 500;
         this.initialized = false;
         this.lastAnalysisData = null;
+        this.lastAmenitiesReport = null;
+        this.lastPopulationData = null;
     }
 
     init() {
@@ -343,8 +345,56 @@ class MapManager {
             return;
         }
 
-        reportContent.innerHTML = this.generateFullReport();
+        // Show loading state
+        reportContent.innerHTML = '<div style="padding: 20px; text-align: center;"><p>⏳ Loading detailed report...</p></div>';
         modal.style.display = 'block';
+
+        // Fetch amenities and population data
+        this.fetchReportData().then(() => {
+            reportContent.innerHTML = this.generateFullReport();
+        }).catch(error => {
+            console.error('Error fetching report data:', error);
+            reportContent.innerHTML = '<div style="padding: 20px; color: #e17055;"><p>⚠️ Error loading report data. Please try again.</p></div>';
+        });
+    }
+
+    async fetchReportData() {
+        if (!this.selectedLocation) return;
+
+        const { lat, lng } = this.selectedLocation;
+
+        try {
+            // Fetch amenities report (schools, hospitals, bus stops, cafes)
+            const amenitiesResponse = await fetch(
+                `http://localhost:8000/api/amenities-report/`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        lat: lat,
+                        lng: lng,
+                        radius: this.analysisRadius
+                    })
+                }
+            );
+
+            if (amenitiesResponse.ok) {
+                this.lastAmenitiesReport = await amenitiesResponse.json();
+            }
+
+            // Fetch area population
+            const populationResponse = await fetch(
+                `http://localhost:8000/api/area-population/?lat=${lat}&lng=${lng}&radius=${this.analysisRadius}`
+            );
+
+            if (populationResponse.ok) {
+                this.lastPopulationData = await populationResponse.json();
+            }
+        } catch (error) {
+            console.error('Error fetching report data:', error);
+            this.lastAmenitiesReport = null;
+            this.lastPopulationData = null;
+        }
     }
 
     hideFullReport() {
@@ -367,6 +417,10 @@ class MapManager {
         const prediction = this.lastAnalysisData?.prediction || {};
         const probabilities = prediction.all_probabilities || {};
 
+        // Get amenities report and population data
+        const amenitiesReport = this.lastAmenitiesReport?.amenities_report || {};
+        const populationData = this.lastPopulationData || {};
+
         return `
             <div class="report-section">
                 <h3>📍 Location Details</h3>
@@ -386,6 +440,66 @@ class MapManager {
                     <div class="report-item"><strong>Population Density:</strong><br>${population}</div>
                 </div>
             </div>
+
+            ${populationData.total_population ? `
+            <div class="report-section">
+                <h3>👥 Population in Selected Area</h3>
+                <div class="report-grid">
+                    <div class="report-item">
+                        <strong>Total Population:</strong><br>
+                        <span style="font-size: 1.4em; color: #6c5ce7; font-weight: bold;">
+                            ${Number(populationData.total_population).toLocaleString()}
+                        </span>
+                    </div>
+                    <div class="report-item">
+                        <strong>Affected Wards:</strong><br>
+                        ${populationData.affected_ward_count || 0} ward${populationData.affected_ward_count !== 1 ? 's' : ''}
+                    </div>
+                </div>
+                ${populationData.affected_wards && populationData.affected_wards.length > 0 ? `
+                <div style="margin-top: 15px; padding: 10px; background: #f5f6fa; border-radius: 5px;">
+                    <strong>Ward Details:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        ${populationData.affected_wards.map(ward => `
+                            <li>Ward ${ward.ward_number}: ${Number(ward.population).toLocaleString()} population, ${ward.population_density.toFixed(0)}/km²</li>
+                        `).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+            ` : ''}
+
+            ${Object.keys(amenitiesReport).length > 0 ? `
+            <div class="report-section">
+                <h3>🏘️ Amenities in Selected Area</h3>
+                <div class="report-grid">
+                    ${Object.entries(amenitiesReport).map(([type, data]) => `
+                        <div class="report-item">
+                            <strong>${type.replace(/_/g, ' ').toUpperCase()}:</strong><br>
+                            <span style="font-size: 1.3em; color: #00b894;">${data.count}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="margin-top: 15px; padding: 10px; background: #f5f6fa; border-radius: 5px;">
+                    <strong>Amenity Listings:</strong>
+                    ${Object.entries(amenitiesReport).map(([type, data]) => {
+                        if (data.count === 0) return '';
+                        return `
+                            <div style="margin: 10px 0;">
+                                <strong>${type.replace(/_/g, ' ').toUpperCase()} (${data.count}):</strong>
+                                <ul style="margin: 5px 0; padding-left: 20px; font-size: 0.9em;">
+                                    ${data.amenities.slice(0, 5).map(amenity => `
+                                        <li>${amenity.name || 'Unnamed'}</li>
+                                    `).join('')}
+                                    ${data.count > 5 ? `<li><em>...and ${data.count - 5} more</em></li>` : ''}
+                                </ul>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            ` : ''}
 
             ${Object.keys(probabilities).length > 0 ? `
             <div class="report-section">

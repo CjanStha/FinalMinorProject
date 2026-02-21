@@ -17,10 +17,25 @@ urlpatterns = [
     # POST /api/analyze/
     # Main analysis: nearby + top5 + suitability score + ML prediction
     path('analyze/',      views.SuitabilityAnalysisView.as_view(), name='analyze'),
+
+    # GET /api/amenities/?lat=27.71&lng=85.32&radius=500&type=school
+    # Returns amenities (schools, hospitals, bus stops, etc.) within radius
+    path('amenities/', views.AmenitiesView.as_view(), name='amenities'),
+
+    # POST /api/amenities-report/
+    # Returns count of different amenity types (school, hospital, bus_station) within radius
+    path('amenities-report/', views.AmenitiesReportView.as_view(), name='amenities-report'),
+
+    # GET /api/area-population/?lat=27.71&lng=85.32&radius=500
+    # Calculates exact population within the area based on ward boundaries
+    path('area-population/', views.AreaPopulationView.as_view(), name='area-population'),
 ]
 
 # Final URL structure:
-#   /api/auth/google/    ← from cafelocate/urls.py prefix "api/" + "auth/google/"
-#   /api/cafes/nearby/   ← from cafelocate/urls.py prefix "api/" + "cafes/nearby/"
-#   /api/analyze/        ← from cafelocate/urls.py prefix "api/" + "analyze/"
-#   /api/predict/        ← handled by ml_engine/urls.py
+#   /api/auth/register/   ← user registration
+#   /api/auth/login/      ← user login
+#   /api/cafes/nearby/    ← nearby cafes within radius
+#   /api/analyze/         ← main suitability analysis
+#   /api/amenities/       ← amenities by type within radius
+#   /api/amenities-report/ ← summary report of key amenities
+#   /api/area-population/ ← exact population for area

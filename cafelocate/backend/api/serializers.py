@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Cafe, Ward, UserProfile
+from .models import Cafe, Ward, UserProfile, Amenity
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -40,6 +40,24 @@ class CafeSerializer(serializers.ModelSerializer):
         if obj.rating is None:
             return 0
         return round(obj.rating * math.log(obj.review_count + 1), 2)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# AmenitySerializer
+# Converts Amenity objects (schools, hospitals, bus stops) to JSON
+# ═══════════════════════════════════════════════════════════════════
+class AmenitySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model  = Amenity
+        fields = [
+            'id',
+            'osm_id',
+            'amenity_type',
+            'name',
+            'latitude',
+            'longitude',
+        ]
 
 
 # ═══════════════════════════════════════════════════════════════════
