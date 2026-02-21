@@ -283,6 +283,6 @@ If you encounter issues:
 
 ---
 
-- **Developed by:** Santosh Mahato Koiri, Sijan Shrestha, Upendra Khadka
+## **Developed by:** Santosh Mahato Koiri, Sijan Shrestha, Upendra Khadka
 - **Institution:** ACEM, Kalanki
 - **Date:** February 21, 2026
