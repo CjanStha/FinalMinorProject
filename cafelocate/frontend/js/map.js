@@ -606,6 +606,7 @@ class MapManager {
         const currentLevel = this.lastAnalysisData?.suitability?.level || '-';
         const currentLocation = this.selectedLocation;
         const currentRadius = this.analysisRadius;
+        const currentRecommendedType = this.lastAnalysisData?.prediction?.recommended_cafe_type || '-';
 
         const comparableItems = (historyItems || []).filter(item => {
             if (!currentLocation) return true;
@@ -618,12 +619,28 @@ class MapManager {
             return !(sameLat && sameLng && sameRadius && sameScore);
         });
 
+        const currentSummary = currentLocation ? `
+            <div class="history-item">
+                <strong>Current Pin</strong>
+                <div class="history-meta">
+                    ${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)} • ${currentRadius}m • ${this.formatCafeType(this.selectedCafeType)}
+                </div>
+                <div class="history-compare">
+                    Score: ${currentScore.toFixed(2)} (${currentLevel})<br>
+                    Recommended: ${currentRecommendedType}
+                </div>
+            </div>
+        ` : '';
+
         if (comparableItems.length === 0) {
-            historyList.innerHTML = '<p class="no-data">No previous saved locations yet for this cafe type.</p>';
+            historyList.innerHTML = `
+                ${currentSummary}
+                <p class="no-data">This is your first saved location for this cafe type. Pin another location to compare.</p>
+            `;
             return;
         }
 
-        historyList.innerHTML = comparableItems.map(item => {
+        historyList.innerHTML = currentSummary + comparableItems.map(item => {
             const previousScore = Number(item.suitability_score || 0);
             const diff = currentScore - previousScore;
             const diffLabel = diff === 0
