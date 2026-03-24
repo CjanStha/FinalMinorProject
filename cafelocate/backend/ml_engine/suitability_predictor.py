@@ -12,30 +12,18 @@ MODELS_DIR = BASE_DIR / 'ml' / 'models'
 
 MODEL_CANDIDATES = [
     {
-        'name': 'observed_v1_85_15',
-        'rf_path': MODELS_DIR / 'rf_regressor_observed_v1_85_15.pkl',
-        'xgb_path': MODELS_DIR / 'xgb_regressor_observed_v1_85_15.pkl',
-        'scaler_path': MODELS_DIR / 'scaler_regression_observed.pkl',
-        'features_path': MODELS_DIR / 'feature_columns_regression_observed.pkl',
-    },
-    {
-        'name': 'pseudo_v3_85_15',
-        'rf_path': MODELS_DIR / 'rf_regressor_v3_85_15.pkl',
-        'xgb_path': MODELS_DIR / 'xgb_regressor_v3_85_15.pkl',
-        'scaler_path': MODELS_DIR / 'scaler_regression.pkl',
-        'features_path': MODELS_DIR / 'feature_columns_regression.pkl',
+        'name': 'ahp_tuned_v2',
+        'rf_path': MODELS_DIR / 'rf_suitability_v2_ahp_tuned.pkl',
+        'xgb_path': MODELS_DIR / 'xgb_suitability_ahp.pkl',
+        'scaler_path': MODELS_DIR / 'scaler_suitability.pkl',
+        'features_path': MODELS_DIR / 'feature_columns_suitability.pkl',
     },
 ]
 
 DEFAULT_FEATURES = [
-    'competitors_within_500m', 'competitors_within_200m',
-    'competitors_min_distance', 'competitors_avg_distance',
-    'roads_within_500m', 'roads_avg_distance',
-    'schools_within_500m', 'schools_within_200m', 'schools_min_distance',
-    'hospitals_within_500m', 'hospitals_min_distance',
-    'bus_stops_within_500m', 'bus_stops_min_distance',
-    'population_density_proxy', 'accessibility_score',
-    'foot_traffic_score', 'competition_pressure',
+    'population_density', 'accessibility_score', 'foot_traffic_score',
+    'competition_effective', 'bus_stops_within_500m',
+    'osm_amenity_density_500m', 'nearby_schools', 'nearby_hospitals'
 ]
 
 _rf_model = None
@@ -100,9 +88,9 @@ def _load_models():
 
 
 def _score_to_level(score):
-    if score >= 70:
+    if score >= 7:
         return 'High Suitability'
-    if score >= 40:
+    if score >= 4:
         return 'Medium Suitability'
     return 'Low Suitability'
 
@@ -114,29 +102,32 @@ def _build_feature_array(features_dict):
 
 
 def _fallback_score(features_dict):
-    population_component = min(100.0, float(features_dict.get('population_density_proxy', 0.0)) * 10.0) * 0.20
-    accessibility_component = min(10.0, float(features_dict.get('accessibility_score', 0.0))) * 10.0 * 0.15
-    foot_traffic_component = min(10.0, float(features_dict.get('foot_traffic_score', 0.0))) * 10.0 * 0.15
-    schools_component = min(20.0, float(features_dict.get('schools_within_500m', 0.0)) * 5.0) * 0.10
-    bus_component = min(20.0, float(features_dict.get('bus_stops_within_500m', 0.0)) * 5.0) * 0.10
-    competition_penalty = min(100.0, float(features_dict.get('competition_pressure', 0.0)) * 10.0) * 0.20
-    competitor_penalty = min(100.0, float(features_dict.get('competitors_within_200m', 0.0)) * 10.0) * 0.10
+    population_component = min(10.0, float(features_dict.get('population_density', 0.0))) * 0.25
+    accessibility_component = min(10.0, float(features_dict.get('accessibility_score', 0.0))) * 0.20
+    foot_traffic_component = min(10.0, float(features_dict.get('foot_traffic_score', 0.0))) * 0.20
+    competition_penalty = min(10.0, float(features_dict.get('competition_effective', 0.0))) * 0.15
+    bus_component = min(10.0, float(features_dict.get('bus_stops_within_500m', 0.0)) * 0.1) * 0.10
+    amenity_component = min(10.0, float(features_dict.get('osm_amenity_density_500m', 0.0)) * 0.01) * 0.05
+    schools_component = min(10.0, float(features_dict.get('nearby_schools', 0.0)) * 0.1) * 0.03
+    hospitals_component = min(10.0, float(features_dict.get('nearby_hospitals', 0.0)) * 0.1) * 0.02
 
     score = (
         population_component +
         accessibility_component +
         foot_traffic_component +
+        bus_component +
+        amenity_component +
         schools_component +
-        bus_component -
-        competition_penalty -
-        competitor_penalty
+        hospitals_component -
+        competition_penalty
     )
-    return float(max(0.0, min(100.0, score)))
+    return float(max(0.0, min(10.0, score)))
 
 
 def get_suitability_prediction(features_dict):
     """
-    Predict a continuous suitability score using the v3 regression models.
+    Predict suitability scores using both Random Forest and XGBoost models.
+    Returns individual model predictions for frontend comparison.
     """
     _load_models()
 
@@ -151,37 +142,53 @@ def get_suitability_prediction(features_dict):
                 'confidence': 0.0,
                 'model_type': 'regression_fallback',
                 'features_used': len(feature_columns),
-                'model_breakdown': {},
+                'random_forest_score': None,
+                'xgboost_score': None,
+                'ensemble_score': score,
             }
 
         features_scaled = pd.DataFrame(
             _scaler.transform(features_array),
             columns=feature_columns,
         )
-        model_scores = {}
+
+        rf_score = None
+        xgb_score = None
+        ensemble_score = None
+
         if _rf_model is not None:
-            model_scores['random_forest_v3_score'] = float(_rf_model.predict(features_scaled)[0])
+            rf_score = float(_rf_model.predict(features_scaled)[0])
         if _xgb_model is not None:
-            model_scores['xgboost_v3_score'] = float(_xgb_model.predict(features_scaled)[0])
+            xgb_score = float(_xgb_model.predict(features_scaled)[0])
 
-        ensemble_score = float(np.clip(sum(model_scores.values()) / len(model_scores), 0.0, 100.0))
-
-        if len(model_scores) > 1:
-            score_values = list(model_scores.values())
-            confidence = float(max(0.0, min(1.0, 1.0 - abs(score_values[0] - score_values[1]) / 100.0)))
+        # Calculate ensemble if both models are available
+        if rf_score is not None and xgb_score is not None:
+            ensemble_score = float(np.clip((rf_score + xgb_score) / 2, 0.0, 10.0))
+            confidence = float(max(0.0, min(1.0, 1.0 - abs(rf_score - xgb_score) / 10.0)))
             model_type = 'regression_ensemble_v3'
-        else:
+        elif rf_score is not None:
+            ensemble_score = rf_score
             confidence = 0.75
-            model_type = 'regression_single_model_v3'
+            model_type = 'regression_rf_only_v3'
+        elif xgb_score is not None:
+            ensemble_score = xgb_score
+            confidence = 0.75
+            model_type = 'regression_xgb_only_v3'
+        else:
+            ensemble_score = _fallback_score(features_dict)
+            confidence = 0.0
+            model_type = 'regression_fallback'
 
         return {
-            'predicted_score': round(ensemble_score, 2),
+            'predicted_score': round(ensemble_score, 2),  # Keep for backward compatibility
             'predicted_suitability': _score_to_level(ensemble_score),
             'confidence': round(confidence, 3),
             'model_type': model_type,
             'model_variant': _active_model_name,
             'features_used': len(feature_columns),
-            'model_breakdown': {name: round(value, 2) for name, value in model_scores.items()},
+            'random_forest_score': round(rf_score, 2) if rf_score is not None else None,
+            'xgboost_score': round(xgb_score, 2) if xgb_score is not None else None,
+            'ensemble_score': round(ensemble_score, 2),
         }
     except Exception as exc:
         logger.error(f'Error in regression suitability prediction: {exc}')
@@ -192,6 +199,8 @@ def get_suitability_prediction(features_dict):
             'confidence': 0.0,
             'model_type': 'regression_error_fallback',
             'features_used': len(_feature_columns or DEFAULT_FEATURES),
-            'model_breakdown': {},
+            'random_forest_score': None,
+            'xgboost_score': None,
+            'ensemble_score': round(score, 2),
             'error': str(exc),
         }

@@ -262,17 +262,34 @@ class MapManager {
             levelEl.textContent = suitability.level || prediction.predicted_suitability || '-';
         }
 
+        // Model Predictions
+        const rfScoreEl = document.getElementById('rf-score');
+        const xgbScoreEl = document.getElementById('xgb-score');
+        const ensembleScoreEl = document.getElementById('ensemble-score');
+
+        if (rfScoreEl) {
+            const rfScore = prediction.random_forest_score;
+            rfScoreEl.textContent = rfScore !== null && rfScore !== undefined ? Number(rfScore).toFixed(2) : '-';
+        }
+        if (xgbScoreEl) {
+            const xgbScore = prediction.xgboost_score;
+            xgbScoreEl.textContent = xgbScore !== null && xgbScore !== undefined ? Number(xgbScore).toFixed(2) : '-';
+        }
+        if (ensembleScoreEl) {
+            const ensembleScore = prediction.ensemble_score;
+            ensembleScoreEl.textContent = ensembleScore !== null && ensembleScore !== undefined ? Number(ensembleScore).toFixed(2) : '-';
+        }
+
         // ML Prediction card
         const predictionTypeEl = document.querySelector('#prediction-card .prediction-type');
         const predictionConfEl = document.querySelector('#prediction-card .prediction-confidence');
         if (predictionTypeEl) {
-            predictionTypeEl.textContent = prediction.recommended_cafe_type || 'Unknown';
+            predictionTypeEl.textContent =
+                prediction.recommended_cafe_type ||
+                'No recommendation';
         }
         if (predictionConfEl) {
-            const typeConfidence = prediction.recommended_cafe_type_confidence;
-            predictionConfEl.textContent = typeConfidence
-                ? `Confidence: ${(typeConfidence * 100).toFixed(1)}%`
-                : 'Best cafe type to open here';
+            predictionConfEl.textContent = '';
         }
 
         // Top 5 cafes
@@ -338,11 +355,13 @@ class MapManager {
         const scoreCircle = document.querySelector('.score-circle');
         if (!scoreCircle) return;
 
+        const normalizedScore = Math.max(0, Math.min(10, Number(score) || 0));
+        const fillPercent = normalizedScore * 10;
         let color = '#00b894'; // green
-        if (score < 40) color = '#e17055';     // red
-        else if (score < 70) color = '#fdcb6e'; // yellow
+        if (normalizedScore < 4) color = '#e17055';     // red
+        else if (normalizedScore < 7) color = '#fdcb6e'; // yellow
 
-        scoreCircle.style.background = `conic-gradient(${color} 0% ${score}%, #e9ecef ${score}% 100%)`;
+        scoreCircle.style.background = `conic-gradient(${color} 0% ${fillPercent}%, #e9ecef ${fillPercent}% 100%)`;
     }
 
     updateCoordinatesDisplay(lat, lng) {
@@ -559,7 +578,6 @@ class MapManager {
             radius: this.analysisRadius,
             suitability_score: score,
             suitability_level: analysisData?.suitability?.level || '-',
-            recommended_cafe_type: analysisData?.prediction?.recommended_cafe_type || '',
             created_at: new Date().toISOString(),
         };
 
@@ -607,8 +625,6 @@ class MapManager {
         const currentLevel = this.lastAnalysisData?.suitability?.level || '-';
         const currentLocation = this.selectedLocation;
         const currentRadius = this.analysisRadius;
-        const currentRecommendedType = this.lastAnalysisData?.prediction?.recommended_cafe_type || '-';
-
         const comparableItems = (historyItems || []).filter(item => {
             if (!currentLocation) return true;
 
@@ -627,8 +643,7 @@ class MapManager {
                     ${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)} • ${currentRadius}m • ${this.formatCafeType(this.selectedCafeType)}
                 </div>
                 <div class="history-compare">
-                    Score: ${currentScore.toFixed(2)} (${currentLevel})<br>
-                    Recommended: ${currentRecommendedType}
+                    Score: ${currentScore.toFixed(2)} (${currentLevel})
                 </div>
             </div>
         ` : '';
@@ -854,8 +869,6 @@ class MapManager {
             : 'Not selected';
 
         const prediction = this.lastAnalysisData?.prediction || {};
-        const probabilities = prediction.all_probabilities || {};
-
         // Get amenities report and population data
         const amenitiesReport = this.lastAmenitiesReport?.amenities_report || {};
         const populationData = this.lastPopulationData || {};
@@ -873,7 +886,7 @@ class MapManager {
             <div class="report-section">
                 <h3>📊 Suitability Analysis</h3>
                 <div class="report-grid">
-                    <div class="report-item"><strong>Overall Score:</strong><br>${score} / 100</div>
+                    <div class="report-item"><strong>Overall Score:</strong><br>${score} / 10</div>
                     <div class="report-item"><strong>Competitors Nearby:</strong><br>${competitors}</div>
                     <div class="report-item"><strong>Road Accessibility:</strong><br>${roadLength}</div>
                     <div class="report-item"><strong>Population Density:</strong><br>${population}</div>
@@ -941,27 +954,15 @@ class MapManager {
             </div>
             ` : ''}
 
-            ${Object.keys(probabilities).length > 0 ? `
-            <div class="report-section">
-                <h3>🤖 ML Model Probabilities</h3>
-                <div class="report-grid">
-                    ${Object.entries(probabilities).map(([label, prob]) => `
-                        <div class="report-item">
-                            <strong>${label}:</strong><br>${(prob * 100).toFixed(1)}%
-                        </div>
-                    `).join('')}
-                </div>
-            </div>` : ''}
-
             <div class="report-insights">
                 <h4>💡 Key Insights & Recommendations</h4>
                 <ul>
                     <li><strong>Location Strength:</strong> ${this._getLocationStrength(parseInt(score))}</li>
                     <li><strong>Competition Level:</strong> ${this._getCompetitionLevel(competitors)}</li>
                     <li><strong>Market Potential:</strong> ${this._getMarketPotential(population)}</li>
-                    <li><strong>Recommendation:</strong> ${parseInt(score) >= 70
+                    <li><strong>Recommendation:</strong> ${parseFloat(score) >= 7
                         ? 'This location shows good potential for a cafe business.'
-                        : parseInt(score) >= 40
+                        : parseFloat(score) >= 4
                             ? 'This location is workable, but competition and access should be reviewed carefully.'
                             : 'Consider alternative locations with less competition or better road access.'}</li>
                 </ul>
@@ -1004,9 +1005,9 @@ class MapManager {
     }
 
     _getLocationStrength(score) {
-        if (score >= 70) return "Excellent - high success potential";
-        if (score >= 40) return "Good - moderate success potential";
-        if (score >= 20) return "Fair - consider improvements";
+        if (score >= 7) return "Excellent - high success potential";
+        if (score >= 4) return "Good - moderate success potential";
+        if (score >= 2) return "Fair - consider improvements";
         return "Poor - high risk, explore alternatives";
     }
 

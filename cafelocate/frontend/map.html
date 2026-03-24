@@ -24,7 +24,7 @@
             <div class="sidebar-section">
                 <h3>🏪 Choose Cafe Type</h3>
                 <select id="cafe-type-select" class="form-control">
-                    <option value="">Select cafe type...</option>
+                    <option value="" selected disabled hidden>Select cafe type...</option>
                     <option value="coffee_shop">Coffee Shop</option>
                     <option value="bakery">Bakery Cafe</option>
                     <option value="dessert_shop">Dessert Shop</option>
@@ -66,14 +66,33 @@
                         <div class="score-circle">
                             <span id="suitability-score">-</span>
                         </div>
-                        <div class="score-label">out of 100</div>
+                        <div class="score-label">out of 10</div>
                         <div id="suitability-level" class="score-label">-</div>
+                    </div>
+                </div>
+
+                <!-- Model Predictions -->
+                <div class="result-section">
+                    <h4>🤖 ML Model Predictions</h4>
+                    <div class="model-comparison">
+                        <div class="model-score">
+                            <div class="model-name">Random Forest</div>
+                            <div class="model-value" id="rf-score">-</div>
+                        </div>
+                        <div class="model-score">
+                            <div class="model-name">XGBoost</div>
+                            <div class="model-value" id="xgb-score">-</div>
+                        </div>
+                        <div class="model-score ensemble">
+                            <div class="model-name">Ensemble</div>
+                            <div class="model-value" id="ensemble-score">-</div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- ML Prediction -->
                 <div class="result-section">
-                    <h4>🤖 AI Recommendation</h4>
+                    <h4>🤖 Best Cafe Type To Open</h4>
                     <div id="prediction-card" class="prediction-card">
                         <div class="prediction-type">-</div>
                         <div class="prediction-confidence">-</div>

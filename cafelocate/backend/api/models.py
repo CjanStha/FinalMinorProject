@@ -156,7 +156,6 @@ class AnalysisHistory(models.Model):
     radius = models.IntegerField(default=500)
     suitability_score = models.FloatField()
     suitability_level = models.CharField(max_length=50)
-    recommended_cafe_type = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

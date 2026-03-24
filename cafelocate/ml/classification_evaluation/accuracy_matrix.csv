@@ -1,5 +1,0 @@
-suite,split,rf,xgb
-observed,80_20,0.9302,0.8884
-observed,85_15,0.9379,0.9317
-pseudo,80_20,1.0,1.0
-pseudo,85_15,1.0,1.0

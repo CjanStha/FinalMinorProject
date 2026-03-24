@@ -74,7 +74,6 @@ pandas==2.2.2
 numpy==1.26.4
 
 # Joblib: saves and loads trained model files (.pkl)
-# joblib.dump(model, 'rf_model.pkl') / joblib.load('rf_model.pkl')
 joblib==1.4.2
 
 # Matplotlib: plots confusion matrix and feature importance charts

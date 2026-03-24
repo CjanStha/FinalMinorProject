@@ -1,4 +1,4 @@
-place_id,name,lat,lng,type,is_operational,source,competitors_within_500m,competitors_within_200m,competitors_min_distance,competitors_avg_distance,roads_within_500m,roads_avg_distance,schools_within_500m,schools_within_200m,schools_min_distance,hospitals_within_500m,hospitals_min_distance,bus_stops_within_500m,bus_stops_min_distance,population_density_proxy,accessibility_score,foot_traffic_score,competition_pressure
+place_id,name,lat,lng,type,is_operational,source,competitors_within_500m,competitors_within_200m,competitors_min_distance,competitors_avg_distance,roads_within_500m,roads_avg_distance,schools_within_500m,schools_within_200m,schools_min_distance,hospitals_within_500m,hospitals_min_distance,bus_stops_within_500m,bus_stops_min_distance,population_density,accessibility_score,foot_traffic_score,competition_pressure
 osm_432195183,Hermann Helmers Bakery,27.6783303,85.312612,cafe,TRUE,openstreetmap,,,,,,,,,,,,,,,,5.57125,
 osm_435005609,क्याफे डु टेम्पल,27.6739264,85.3255321,cafe,TRUE,openstreetmap,,,,,,,,,,,,,,,,5.57125,
 osm_669269004,Cafe U,27.6826497,85.3062865,cafe,TRUE,openstreetmap,,,,,,,,,,,,,,,,5.57125,

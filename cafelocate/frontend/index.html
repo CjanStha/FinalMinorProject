@@ -15,7 +15,7 @@
         <div class="login-container">
             <div class="login-header">
                 <h1>☕ CafeSuitabilityAnalysis</h1>
-                <p>Analyze optimal cafe locations in Kathmandu using AI-powered analysis</p>
+                <p>Analyze optimal cafe locations in Kathmandu using AI-powered regression analysis</p>
             </div>
             <div class="login-content">
                 <div class="features">
@@ -27,7 +27,7 @@
                     <div class="feature">
                         <div class="feature-icon">🤖</div>
                         <h3>🤖 ML Suitability Predictions</h3>
-                        <p>AI-powered recommendations for cafe types that will succeed</p>
+                        <p>AI-powered suitability scoring on a simple 0-10 scale</p>
                     </div>
                     <div class="feature">
                         <div class="feature-icon">📊</div>
@@ -99,13 +99,11 @@
                 <div class="sidebar-section">
                     <h3>🏪 Choose Cafe Type</h3>
                     <select id="cafe-type-select" class="form-control">
-                        <option value="">Select cafe type...</option>
+                        <option value="" selected disabled hidden>Select cafe type...</option>
                         <option value="coffee_shop">Coffee Shop</option>
                         <option value="bakery">Bakery Cafe</option>
                         <option value="dessert_shop">Dessert Shop</option>
                         <option value="restaurant">Restaurant Cafe</option>
-                        <option value="cafe_bar">Cafe Bar</option>
-                        
                     </select>
                 </div>
 
@@ -154,14 +152,14 @@
                             <div class="score-circle">
                                 <span id="suitability-score">-</span>
                             </div>
-                            <div class="score-label">out of 100</div>
+                            <div class="score-label">out of 10</div>
                             <div id="suitability-level" class="score-label">-</div>
                         </div>
                     </div>
 
                     <!-- ML Prediction -->
                     <div class="result-section">
-                        <h4>🤖 Recommended Cafe</h4>
+                        <h4>🤖 Best Cafe Type To Open</h4>
                         <div id="prediction-card" class="prediction-card">
                             <div class="prediction-type">-</div>
                             <div class="prediction-confidence">-</div>

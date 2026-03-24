@@ -113,6 +113,5 @@ class AnalysisHistorySerializer(serializers.ModelSerializer):
             'radius',
             'suitability_score',
             'suitability_level',
-            'recommended_cafe_type',
             'created_at',
         ]

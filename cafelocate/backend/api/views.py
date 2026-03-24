@@ -8,7 +8,6 @@ from .models import Cafe, Ward, Road, UserProfile, Amenity, AnalysisHistory
 from .serializers import CafeSerializer, SuitabilityRequestSerializer, UserProfileSerializer, AmenitySerializer, AnalysisHistorySerializer
 from .location_validation import is_within_kathmandu_metropolitan_city
 from ml_engine.suitability_predictor import get_suitability_prediction
-from ml_engine.predictor import get_prediction
 
 try:
     from shapely.wkt import loads as wkt_loads
@@ -18,6 +17,50 @@ except ImportError:
     SHAPELY_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
+
+SUPPORTED_CAFE_TYPES = {
+    'coffee_shop': 'Coffee Shop',
+    'bakery': 'Bakery Cafe',
+    'dessert_shop': 'Dessert Shop',
+    'restaurant': 'Restaurant Cafe',
+}
+
+
+def _clamp_model_feature(value):
+    """
+    Keep live regression features inside the 0-10 band used by the saved model artifacts.
+    """
+    return max(0.0, min(10.0, float(value)))
+
+
+def _build_regression_features(
+    pop_density,
+    accessibility_score,
+    foot_traffic_score,
+    competition_pressure,
+    amenity_stats,
+    osm_amenity_density_500m,
+):
+    """
+    Align live API features with the scale used during model training.
+
+    The training pipeline learned from bounded 0-10 style inputs. In production we compute
+    some raw values in different units, especially ward population density (people / km²),
+    so we map them back into the model's expected range before scoring.
+    """
+    return {
+        # Census density is stored in people/km² (for example ~6,700). The training dataset
+        # used a compressed density feature around 0-150, so divide by 1000 before clamping.
+        'population_density': round(_clamp_model_feature(pop_density / 1000.0), 2),
+        'accessibility_score': round(_clamp_model_feature(accessibility_score), 2),
+        'foot_traffic_score': round(_clamp_model_feature(foot_traffic_score), 2),
+        # Training defined competition_effective as the inverse of competition pressure.
+        'competition_effective': round(_clamp_model_feature(10.0 - competition_pressure), 2),
+        'bus_stops_within_500m': round(_clamp_model_feature(amenity_stats['bus_stops_within_500m']), 2),
+        'osm_amenity_density_500m': round(_clamp_model_feature(osm_amenity_density_500m), 2),
+        'nearby_schools': round(_clamp_model_feature(amenity_stats['schools_within_500m']), 2),
+        'nearby_hospitals': round(_clamp_model_feature(amenity_stats['hospitals_within_500m']), 2),
+    }
 
 
 def get_request_user(request):
@@ -49,6 +92,77 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
     c = 2 * math.asin(math.sqrt(a))
     return c * 6371 * 1000  # metres
+
+
+def _recommend_cafe_type(total_competitors, nearby_cafes, amenity_stats, accessibility_score, foot_traffic_score, pop_density):
+    type_counts = {key: 0 for key in SUPPORTED_CAFE_TYPES}
+    type_avg_rating = {key: 0.0 for key in SUPPORTED_CAFE_TYPES}
+
+    ratings_by_type = {key: [] for key in SUPPORTED_CAFE_TYPES}
+    for cafe in nearby_cafes:
+        cafe_type = (cafe.cafe_type or '').strip().lower()
+        if cafe_type not in SUPPORTED_CAFE_TYPES:
+            continue
+        type_counts[cafe_type] += 1
+        if cafe.rating is not None:
+            ratings_by_type[cafe_type].append(float(cafe.rating))
+
+    for cafe_type, ratings in ratings_by_type.items():
+        if ratings:
+            type_avg_rating[cafe_type] = sum(ratings) / len(ratings)
+
+    demand_pressure = min(10.0, max(0.0, float(pop_density) / 1500.0))
+    school_signal = min(10.0, amenity_stats['schools_within_500m'] * 0.8)
+    transit_signal = min(10.0, amenity_stats['bus_stops_within_500m'] * 0.9)
+
+    raw_scores = {
+        'coffee_shop': (
+            (foot_traffic_score * 0.34) +
+            (accessibility_score * 0.24) +
+            (transit_signal * 0.14) +
+            (demand_pressure * 0.10) +
+            (max(0.0, 5.0 - type_counts['coffee_shop']) * 0.36)
+        ),
+        'bakery': (
+            (school_signal * 0.25) +
+            (demand_pressure * 0.18) +
+            (accessibility_score * 0.18) +
+            (foot_traffic_score * 0.12) +
+            (max(0.0, 4.0 - type_counts['bakery']) * 0.55)
+        ),
+        'dessert_shop': (
+            (school_signal * 0.26) +
+            (foot_traffic_score * 0.20) +
+            (demand_pressure * 0.12) +
+            (transit_signal * 0.12) +
+            (max(0.0, 3.0 - type_counts['dessert_shop']) * 0.70)
+        ),
+        'restaurant': (
+            (demand_pressure * 0.28) +
+            (accessibility_score * 0.22) +
+            (foot_traffic_score * 0.16) +
+            (transit_signal * 0.10) +
+            (max(0.0, 6.0 - type_counts['restaurant']) * 0.28)
+        ),
+    }
+
+    for cafe_type, avg_rating in type_avg_rating.items():
+        raw_scores[cafe_type] += min(1.0, avg_rating / 5.0) * 0.35
+
+    score_sum = sum(max(0.01, value) for value in raw_scores.values())
+    probabilities = {
+        SUPPORTED_CAFE_TYPES[cafe_type]: round(max(0.01, value) / score_sum, 3)
+        for cafe_type, value in sorted(raw_scores.items(), key=lambda item: item[1], reverse=True)
+    }
+    best_type = max(raw_scores, key=raw_scores.get)
+
+    return {
+        'recommended_cafe_type': SUPPORTED_CAFE_TYPES[best_type],
+        'recommended_cafe_type_confidence': round(probabilities[SUPPORTED_CAFE_TYPES[best_type]], 3),
+        'cafe_type_probabilities': probabilities,
+        'cafe_type_method': 'heuristic_location_fit',
+        'cafe_type_counts_nearby': {SUPPORTED_CAFE_TYPES[key]: type_counts[key] for key in SUPPORTED_CAFE_TYPES},
+    }
 
 
 def _get_amenity_stats(lat, lng, radius):
@@ -750,12 +864,12 @@ class SuitabilityAnalysisView(APIView):
         if nearest_main_road_m is not None:
             nearest_main_road_m = round(nearest_main_road_m)
 
-        # Step 5: Compute suitability score (0-100)
+        # Step 5: Compute heuristic suitability score (0-10)
         weighted_competitors = total_competitors + (same_type_competitors * 1.5)
-        competitor_score = max(0, 1 - (weighted_competitors / 20)) * 40
-        road_score       = min(1, road_m / 3000) * 30
-        pop_score        = min(1, pop_density / 15000) * 30
-        suitability_score = round(competitor_score + road_score + pop_score)
+        competitor_score = max(0.0, 1.0 - (weighted_competitors / 20.0)) * 4.0
+        road_score = min(1.0, road_m / 3000.0) * 3.0
+        pop_score = min(1.0, pop_density / 15000.0) * 3.0
+        suitability_score = round(competitor_score + road_score + pop_score, 2)
 
         # Step 6: Regression-based ML suitability prediction
         ratings = [c.rating for c in nearby_cafes if c.rating is not None]
@@ -798,48 +912,39 @@ class SuitabilityAnalysisView(APIView):
             )
         )
 
-        features_dict = {
-            'competitors_within_500m': round(total_competitors + (same_type_competitors * 1.25), 2),
-            'competitors_within_200m': round(len([c for c in nearby_cafes if c.distance <= 200]) + (same_type_within_200m * 1.5), 2),
-            'competitors_min_distance': round(
-                min(
-                    min([c.distance for c in nearby_cafes]) if nearby_cafes else 500,
-                    same_type_min_distance
-                ),
-                2
-            ),
-            'competitors_avg_distance': round(
-                (
-                    ((sum([c.distance for c in nearby_cafes]) / len(nearby_cafes)) if nearby_cafes else 500) * 0.65 +
-                    same_type_avg_distance * 0.35
-                ) if same_type_cafes else
-                ((sum([c.distance for c in nearby_cafes]) / len(nearby_cafes)) if nearby_cafes else 500),
-                2
-            ),
-            'roads_within_500m': min(20, max(0, round(road_m / 200))),
-            'roads_avg_distance': road_m,
-            'schools_within_500m': amenity_stats['schools_within_500m'],
-            'schools_within_200m': amenity_stats['schools_within_200m'],
-            'schools_min_distance': amenity_stats['schools_min_distance'],
-            'hospitals_within_500m': amenity_stats['hospitals_within_500m'],
-            'hospitals_min_distance': amenity_stats['hospitals_min_distance'],
-            'bus_stops_within_500m': amenity_stats['bus_stops_within_500m'],
-            'bus_stops_min_distance': amenity_stats['bus_stops_min_distance'],
-            'population_density_proxy': pop_density / 1000,  # Scale down
-            'accessibility_score': round(accessibility_score, 2),
-            'foot_traffic_score': round(foot_traffic_score, 2),
-            'competition_pressure': round(competition_pressure, 2)
-        }
+        # Calculate competition_effective (normalized competitor pressure)
+        competition_effective = max(0.0, min(10.0, (total_competitors * 0.3) + (same_type_competitors * 0.7)))
+        
+        # Calculate osm_amenity_density_500m (amenities per km² within 500m)
+        amenity_count = (
+            amenity_stats['schools_within_500m'] + 
+            amenity_stats['hospitals_within_500m'] + 
+            amenity_stats['bus_stops_within_500m']
+        )
+        # Approximate area of 500m radius circle in km²
+        area_km2 = 3.14159 * (0.5 ** 2)  # πr² where r=0.5km
+        osm_amenity_density_500m = amenity_count / area_km2 if area_km2 > 0 else 0
+
+        features_dict = _build_regression_features(
+            pop_density=pop_density,
+            accessibility_score=accessibility_score,
+            foot_traffic_score=foot_traffic_score,
+            competition_pressure=competition_pressure,
+            amenity_stats=amenity_stats,
+            osm_amenity_density_500m=osm_amenity_density_500m,
+        )
 
         prediction = get_suitability_prediction(features_dict)
         regression_score = prediction.get('predicted_score', suitability_score)
-
-        # Step 7: Best cafe type recommendation for this location
-        type_features = [total_competitors, avg_rating, road_m, pop_density]
-        type_prediction = get_prediction(type_features)
-        prediction['recommended_cafe_type'] = type_prediction.get('predicted_type')
-        prediction['recommended_cafe_type_confidence'] = type_prediction.get('confidence', 0.0)
-        prediction['cafe_type_probabilities'] = type_prediction.get('all_probabilities', {})
+        type_recommendation = _recommend_cafe_type(
+            total_competitors=total_competitors,
+            nearby_cafes=nearby_cafes,
+            amenity_stats=amenity_stats,
+            accessibility_score=accessibility_score,
+            foot_traffic_score=foot_traffic_score,
+            pop_density=pop_density,
+        )
+        prediction.update(type_recommendation)
 
         return Response({
             'location':     {'lat': lat, 'lng': lng},

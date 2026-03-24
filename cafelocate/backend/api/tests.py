@@ -161,9 +161,8 @@ class CafeApiTests(TestCase):
         data = response.json()
         self.assertIn('lat', data)
 
-    @patch('api.views.get_prediction')
     @patch('api.views.get_suitability_prediction')
-    def test_analyze_uses_regression_score_in_response(self, mock_get_suitability_prediction, mock_get_prediction):
+    def test_analyze_uses_regression_score_in_response(self, mock_get_suitability_prediction):
         mock_get_suitability_prediction.return_value = {
             'predicted_score': 77.7,
             'predicted_suitability': 'High Suitability',
@@ -173,11 +172,6 @@ class CafeApiTests(TestCase):
                 'random_forest_v3_score': 76.8,
                 'xgboost_v3_score': 78.6,
             },
-        }
-        mock_get_prediction.return_value = {
-            'predicted_type': 'Bakery Cafe',
-            'confidence': 0.82,
-            'all_probabilities': {'Bakery Cafe': 0.82},
         }
 
         response = self.client.post(
@@ -196,11 +190,50 @@ class CafeApiTests(TestCase):
         self.assertEqual(data['suitability']['score'], 77.7)
         self.assertEqual(data['suitability']['level'], 'High Suitability')
         self.assertEqual(data['prediction']['model_type'], 'regression_ensemble_v3')
-        self.assertEqual(data['prediction']['recommended_cafe_type'], 'Bakery Cafe')
+        self.assertIn('recommended_cafe_type', data['prediction'])
+        self.assertIn('recommended_cafe_type_confidence', data['prediction'])
 
-    @patch('api.views.get_prediction')
     @patch('api.views.get_suitability_prediction')
-    def test_analyze_builds_real_amenity_features(self, mock_get_suitability_prediction, mock_get_prediction):
+    def test_analyze_returns_best_cafe_type_recommendation(self, mock_get_suitability_prediction):
+        mock_get_suitability_prediction.return_value = {
+            'predicted_score': 8.2,
+            'predicted_suitability': 'High Suitability',
+            'confidence': 0.88,
+            'model_type': 'regression_ensemble_v3',
+            'model_breakdown': {},
+        }
+
+        Cafe.objects.create(
+            place_id='dessert-rival-1',
+            name='Dessert Rival',
+            cafe_type='dessert_shop',
+            latitude=27.71725,
+            longitude=85.32405,
+            location={'type': 'Point', 'coordinates': [85.32405, 27.71725]},
+            rating=4.0,
+            review_count=30,
+            is_open=True
+        )
+
+        response = self.client.post(
+            '/api/analyze/',
+            data={
+                'lat': 27.7172,
+                'lng': 85.3240,
+                'cafe_type': 'coffee_shop',
+                'radius': 500,
+            },
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn(data['prediction']['recommended_cafe_type'], {'Coffee Shop', 'Bakery Cafe', 'Dessert Shop', 'Restaurant Cafe'})
+        self.assertGreaterEqual(data['prediction']['recommended_cafe_type_confidence'], 0.0)
+        self.assertIn('cafe_type_probabilities', data['prediction'])
+
+    @patch('api.views.get_suitability_prediction')
+    def test_analyze_builds_real_amenity_features(self, mock_get_suitability_prediction):
         captured = {}
 
         def capture_features(features_dict):
@@ -214,11 +247,6 @@ class CafeApiTests(TestCase):
             }
 
         mock_get_suitability_prediction.side_effect = capture_features
-        mock_get_prediction.return_value = {
-            'predicted_type': 'Coffee Shop',
-            'confidence': 0.7,
-            'all_probabilities': {'Coffee Shop': 0.7},
-        }
 
         Amenity.objects.create(
             osm_id=1,
@@ -249,14 +277,66 @@ class CafeApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertGreaterEqual(captured['schools_within_500m'], 1)
+        self.assertGreaterEqual(captured['nearby_schools'], 1)
         self.assertGreaterEqual(captured['bus_stops_within_500m'], 1)
         self.assertGreater(captured['accessibility_score'], 0)
         self.assertGreater(captured['foot_traffic_score'], 0)
 
-    @patch('api.views.get_prediction')
     @patch('api.views.get_suitability_prediction')
-    def test_analyze_weights_same_type_competitors_more_heavily(self, mock_get_suitability_prediction, mock_get_prediction):
+    def test_analyze_scales_regression_features_to_training_range(self, mock_get_suitability_prediction):
+        captured = {}
+
+        def capture_features(features_dict):
+            captured.update(features_dict)
+            return {
+                'predicted_score': 5.5,
+                'predicted_suitability': 'Medium Suitability',
+                'confidence': 0.5,
+                'model_type': 'regression_ensemble_v3',
+                'model_breakdown': {},
+            }
+
+        mock_get_suitability_prediction.side_effect = capture_features
+
+        Amenity.objects.create(
+            osm_id=10,
+            amenity_type='bus_stop',
+            name='Nearby Stop',
+            latitude=27.7173,
+            longitude=85.3241,
+            location={'type': 'Point', 'coordinates': [85.3241, 27.7173]},
+        )
+        Amenity.objects.create(
+            osm_id=11,
+            amenity_type='school',
+            name='Nearby School',
+            latitude=27.7174,
+            longitude=85.3242,
+            location={'type': 'Point', 'coordinates': [85.3242, 27.7174]},
+        )
+
+        response = self.client.post(
+            '/api/analyze/',
+            data={
+                'lat': 27.7172,
+                'lng': 85.3240,
+                'cafe_type': 'coffee_shop',
+                'radius': 500,
+            },
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertAlmostEqual(captured['population_density'], 1.0)
+        self.assertGreaterEqual(captured['competition_effective'], 0.0)
+        self.assertLessEqual(captured['competition_effective'], 10.0)
+
+        for feature_name, value in captured.items():
+            self.assertGreaterEqual(value, 0.0, msg=feature_name)
+            self.assertLessEqual(value, 10.0, msg=feature_name)
+
+    @patch('api.views.get_suitability_prediction')
+    def test_analyze_weights_same_type_competitors_more_heavily(self, mock_get_suitability_prediction):
         captured_calls = []
 
         def capture_features(features_dict):
@@ -270,11 +350,6 @@ class CafeApiTests(TestCase):
             }
 
         mock_get_suitability_prediction.side_effect = capture_features
-        mock_get_prediction.return_value = {
-            'predicted_type': 'Coffee Shop',
-            'confidence': 0.7,
-            'all_probabilities': {'Coffee Shop': 0.7},
-        }
 
         Cafe.objects.create(
             place_id='same-type-1',
@@ -337,23 +412,16 @@ class CafeApiTests(TestCase):
         coffee_features = captured_calls[0]
         bakery_features = captured_calls[1]
 
-        self.assertGreater(coffee_features['competition_pressure'], bakery_features['competition_pressure'])
-        self.assertGreater(coffee_features['competitors_within_500m'], bakery_features['competitors_within_500m'])
+        self.assertLess(coffee_features['competition_effective'], bakery_features['competition_effective'])
 
-    @patch('api.views.get_prediction')
     @patch('api.views.get_suitability_prediction')
-    def test_logged_in_analyze_does_not_persist_history_entries(self, mock_get_suitability_prediction, mock_get_prediction):
+    def test_logged_in_analyze_does_not_persist_history_entries(self, mock_get_suitability_prediction):
         mock_get_suitability_prediction.return_value = {
             'predicted_score': 66.5,
             'predicted_suitability': 'Medium Suitability',
             'confidence': 0.8,
             'model_type': 'regression_ensemble_v3',
             'model_breakdown': {},
-        }
-        mock_get_prediction.return_value = {
-            'predicted_type': 'Coffee Shop',
-            'confidence': 0.9,
-            'all_probabilities': {'Coffee Shop': 0.9},
         }
 
         response = self.client.post(
@@ -383,8 +451,7 @@ class CafeApiTests(TestCase):
             cafe_type='coffee_shop',
             radius=500,
             suitability_score=61.5,
-            suitability_level='Medium Suitability',
-            recommended_cafe_type='Coffee Shop'
+            suitability_level='Medium Suitability'
         )
         AnalysisHistory.objects.create(
             user=self.user,
@@ -393,8 +460,7 @@ class CafeApiTests(TestCase):
             cafe_type='bakery',
             radius=500,
             suitability_score=73.0,
-            suitability_level='High Suitability',
-            recommended_cafe_type='Bakery Cafe'
+            suitability_level='High Suitability'
         )
 
         response = self.client.get(
