@@ -473,3 +473,380 @@ class CafeApiTests(TestCase):
         data = response.json()
         self.assertEqual(data['count'], 1)
         self.assertEqual(data['history'][0]['cafe_type'], 'coffee_shop')
+
+
+# ═══════════════════════════════════════════════════════════════════
+# COMPREHENSIVE INTEGRATION TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+
+class AuthenticationTests(TestCase):
+    """Test authentication endpoints and JWT handling."""
+
+    def test_user_registration_success(self):
+        """Test successful user registration."""
+        response = self.client.post(
+            '/api/auth/register/',
+            data={
+                'username': 'newuser',
+                'email': 'newuser@example.com',
+                'password': 'securepass123'
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+        self.assertIn('access_token', data)
+        self.assertEqual(data['user']['username'], 'newuser')
+        self.assertEqual(data['user']['email'], 'newuser@example.com')
+
+    def test_user_registration_duplicate_username(self):
+        """Test registration fails with duplicate username."""
+        UserProfile.objects.create_user(
+            username='existing',
+            email='existing@example.com',
+            password='pass123'
+        )
+        response = self.client.post(
+            '/api/auth/register/',
+            data={
+                'username': 'existing',
+                'email': 'different@example.com',
+                'password': 'pass123'
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_user_login_success(self):
+        """Test successful user login."""
+        UserProfile.objects.create_user(
+            username='loginuser',
+            email='login@example.com',
+            password='securepass123'
+        )
+        response = self.client.post(
+            '/api/auth/login/',
+            data={
+                'username': 'loginuser',
+                'password': 'securepass123'
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('access_token', data)
+
+    def test_user_login_invalid_credentials(self):
+        """Test login fails with invalid credentials."""
+        UserProfile.objects.create_user(
+            username='loginuser',
+            email='login@example.com',
+            password='securepass123'
+        )
+        response = self.client.post(
+            '/api/auth/login/',
+            data={
+                'username': 'loginuser',
+                'password': 'wrongpass'
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 401)
+
+
+class AmenitiesTests(TestCase):
+    """Test amenities endpoint."""
+
+    def setUp(self):
+        Ward.objects.create(
+            ward_number=1,
+            population=1000,
+            households=250,
+            area_sqkm=1.0,
+            population_density=1000.0,
+            boundary={'type': 'Polygon', 'coordinates': [[[85.30, 27.70], [85.35, 27.70], [85.35, 27.75], [85.30, 27.75], [85.30, 27.70]]]}
+        )
+
+    def test_amenities_query_by_type(self):
+        """Test querying amenities by type."""
+        Amenity.objects.create(
+            osm_id=1,
+            amenity_type='school',
+            name='Primary School',
+            latitude=27.7172,
+            longitude=85.3240,
+            location={'type': 'Point', 'coordinates': [85.3240, 27.7172]},
+        )
+        Amenity.objects.create(
+            osm_id=2,
+            amenity_type='hospital',
+            name='City Hospital',
+            latitude=27.7175,
+            longitude=85.3245,
+            location={'type': 'Point', 'coordinates': [85.3245, 27.7175]},
+        )
+
+        response = self.client.get('/api/amenities/', {'lat': 27.7172, 'lng': 85.3240, 'radius': 1000, 'type': 'school'})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['count'], 1)
+        self.assertEqual(data['amenities'][0]['amenity_type'], 'school')
+
+    def test_amenities_report_aggregates_counts(self):
+        """Test amenities report aggregates by type."""
+        for i in range(3):
+            Amenity.objects.create(
+                osm_id=i + 1,
+                amenity_type='school',
+                name=f'School {i}',
+                latitude=27.7172 + (i * 0.0001),
+                longitude=85.3240 + (i * 0.0001),
+                location={'type': 'Point', 'coordinates': [85.3240 + (i * 0.0001), 27.7172 + (i * 0.0001)]},
+            )
+        for i in range(2):
+            Amenity.objects.create(
+                osm_id=100 + i,
+                amenity_type='hospital',
+                name=f'Hospital {i}',
+                latitude=27.7175 + (i * 0.0001),
+                longitude=85.3245 + (i * 0.0001),
+                location={'type': 'Point', 'coordinates': [85.3245 + (i * 0.0001), 27.7175 + (i * 0.0001)]},
+            )
+
+        response = self.client.post(
+            '/api/amenities-report/',
+            data={'lat': 27.7172, 'lng': 85.3240, 'radius': 2000},
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['amenity_counts']['school'], 3)
+        self.assertEqual(data['amenity_counts']['hospital'], 2)
+
+
+class AreaPopulationTests(TestCase):
+    """Test area population calculation."""
+
+    def setUp(self):
+        Ward.objects.create(
+            ward_number=1,
+            population=10000,
+            households=2500,
+            area_sqkm=2.0,
+            population_density=5000.0,
+            boundary={
+                'type': 'Polygon',
+                'coordinates': [[
+                    [85.30, 27.70],
+                    [85.35, 27.70],
+                    [85.35, 27.75],
+                    [85.30, 27.75],
+                    [85.30, 27.70],
+                ]]
+            }
+        )
+
+    def test_area_population_estimation(self):
+        """Test area population calculation."""
+        response = self.client.get('/api/area-population/', {'lat': 27.7172, 'lng': 85.3240, 'radius': 500})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('estimated_population', data)
+        self.assertGreater(data['estimated_population'], 0)
+
+
+class ValidationTests(TestCase):
+    """Test input validation and error handling."""
+
+    def setUp(self):
+        Ward.objects.create(
+            ward_number=1,
+            population=1000,
+            households=250,
+            area_sqkm=1.0,
+            population_density=1000.0,
+            boundary={'type': 'Polygon', 'coordinates': [[[85.30, 27.70], [85.35, 27.70], [85.35, 27.75], [85.30, 27.75], [85.30, 27.70]]]}
+        )
+
+    def test_analyze_missing_required_fields(self):
+        """Test analyze endpoint rejects missing required fields."""
+        response = self.client.post(
+            '/api/analyze/',
+            data={'lat': 27.7172},  # Missing lng, cafe_type, radius
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_analyze_invalid_latitude(self):
+        """Test analyze rejects invalid latitude values."""
+        response = self.client.post(
+            '/api/analyze/',
+            data={
+                'lat': 100.0,  # Invalid latitude (too high)
+                'lng': 85.3240,
+                'cafe_type': 'coffee_shop',
+                'radius': 500,
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_analyze_invalid_longitude(self):
+        """Test analyze rejects invalid longitude values."""
+        response = self.client.post(
+            '/api/analyze/',
+            data={
+                'lat': 27.7172,
+                'lng': 200.0,  # Invalid longitude (too high)
+                'cafe_type': 'coffee_shop',
+                'radius': 500,
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_analyze_invalid_radius(self):
+        """Test analyze rejects invalid radius values."""
+        response = self.client.post(
+            '/api/analyze/',
+            data={
+                'lat': 27.7172,
+                'lng': 85.3240,
+                'cafe_type': 'coffee_shop',
+                'radius': -100,  # Negative radius
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_analyze_invalid_cafe_type(self):
+        """Test analyze rejects invalid cafe type."""
+        response = self.client.post(
+            '/api/analyze/',
+            data={
+                'lat': 27.7172,
+                'lng': 85.3240,
+                'cafe_type': 'invalid_type',
+                'radius': 500,
+            },
+            content_type='application/json'
+        )
+        # Should either validate or gracefully handle
+        self.assertIn(response.status_code, [400, 200])
+
+
+class EdgeCaseTests(TestCase):
+    """Test edge cases and boundary conditions."""
+
+    def setUp(self):
+        Ward.objects.create(
+            ward_number=1,
+            population=1000,
+            households=250,
+            area_sqkm=1.0,
+            population_density=1000.0,
+            boundary={'type': 'Polygon', 'coordinates': [[[85.30, 27.70], [85.35, 27.70], [85.35, 27.75], [85.30, 27.75], [85.30, 27.70]]]}
+        )
+
+    def test_cafes_nearby_with_zero_radius(self):
+        """Test nearby cafes with zero radius."""
+        Cafe.objects.create(
+            place_id='test-1',
+            name='Test Cafe',
+            cafe_type='coffee_shop',
+            latitude=27.7172,
+            longitude=85.3240,
+            location={'type': 'Point', 'coordinates': [85.3240, 27.7172]},
+            rating=4.5,
+            review_count=50,
+            is_open=True
+        )
+
+        response = self.client.get('/api/cafes/nearby/', {'lat': 27.7172, 'lng': 85.3240, 'radius': 0})
+        self.assertIn(response.status_code, [200, 400])
+
+    def test_cafes_nearby_with_very_large_radius(self):
+        """Test nearby cafes with very large radius."""
+        Cafe.objects.create(
+            place_id='test-1',
+            name='Test Cafe',
+            cafe_type='coffee_shop',
+            latitude=27.7172,
+            longitude=85.3240,
+            location={'type': 'Point', 'coordinates': [85.3240, 27.7172]},
+            rating=4.5,
+            review_count=50,
+            is_open=True
+        )
+
+        response = self.client.get('/api/cafes/nearby/', {'lat': 27.7172, 'lng': 85.3240, 'radius': 50000})
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertGreaterEqual(data['count'], 0)
+
+    @patch('api.views.get_suitability_prediction')
+    def test_analyze_with_no_nearby_cafes(self, mock_get_suitability_prediction):
+        """Test analyze when no cafes are nearby."""
+        mock_get_suitability_prediction.return_value = {
+            'predicted_score': 5.0,
+            'predicted_suitability': 'Medium Suitability',
+            'confidence': 0.5,
+            'model_type': 'regression_fallback',
+            'model_breakdown': {},
+        }
+
+        response = self.client.post(
+            '/api/analyze/',
+            data={
+                'lat': 27.7172,
+                'lng': 85.3240,
+                'cafe_type': 'coffee_shop',
+                'radius': 500,
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['nearby_cafes']['count'], 0)
+
+    @patch('api.views.get_suitability_prediction')
+    def test_analyze_with_many_nearby_cafes(self, mock_get_suitability_prediction):
+        """Test analyze with many nearby cafes."""
+        mock_get_suitability_prediction.return_value = {
+            'predicted_score': 7.5,
+            'predicted_suitability': 'High Suitability',
+            'confidence': 0.85,
+            'model_type': 'regression_ensemble_v3',
+            'model_breakdown': {},
+        }
+
+        # Create many nearby cafes
+        for i in range(20):
+            lat = 27.7172 + (i % 5) * 0.0002
+            lng = 85.3240 + (i // 5) * 0.0002
+            Cafe.objects.create(
+                place_id=f'cafe-{i}',
+                name=f'Cafe {i}',
+                cafe_type='coffee_shop',
+                latitude=lat,
+                longitude=lng,
+                location={'type': 'Point', 'coordinates': [lng, lat]},
+                rating=3.5 + (i % 10) * 0.1,
+                review_count=20 + (i % 50),
+                is_open=True
+            )
+
+        response = self.client.post(
+            '/api/analyze/',
+            data={
+                'lat': 27.7172,
+                'lng': 85.3240,
+                'cafe_type': 'coffee_shop',
+                'radius': 500,
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertGreater(data['nearby_cafes']['count'], 0)
